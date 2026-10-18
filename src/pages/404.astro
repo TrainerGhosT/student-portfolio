@@ -1,23 +1,13 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import CallToAction from '../components/CallToAction.astro';
-import Hero from '../components/Hero.astro';
 Astro.response.status = 404;
 ---
 
 <BaseLayout title="Página no encontrada" description="Error 404: esta página no existe." noindex>
-	<div class="wrapper stack gap-10 not-found">
-		<Hero title="Página no encontrada" tagline="Puede que el enlace esté desactualizado." />
-		<div class="center"><CallToAction href="/">Volver al inicio</CallToAction></div>
-	</div>
+	<section class="container-page flex flex-col items-start py-24 sm:py-32">
+		<p class="eyebrow mb-2">Error 404</p>
+		<h1 class="text-4xl sm:text-5xl">Esta página no existe</h1>
+		<p class="mt-3 text-lg text-gray-300">Puede que el enlace esté desactualizado.</p>
+		<a href="/" class="btn btn-primary mt-8 !px-6 !py-3 text-base">Volver al inicio</a>
+	</section>
 </BaseLayout>
-
-<style>
-	.not-found {
-		padding-block: 4rem 8rem;
-	}
-	.center {
-		display: flex;
-		justify-content: center;
-	}
-</style>

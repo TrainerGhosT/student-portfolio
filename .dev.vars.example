@@ -2,3 +2,8 @@
 RESEND_API_KEY=re_xxxxxxxxxxxxxxxxx
 # Clave secreta de prueba de Turnstile (siempre pasa):
 TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+
+# WhatsApp (opcional). Proveedor por defecto: CallMeBot (gratis, a tu propio número).
+# WHATSAPP_PROVIDER=callmebot
+WHATSAPP_PHONE=+50600000000
+CALLMEBOT_APIKEY=

@@ -1,155 +1,124 @@
 ---
 import { env } from 'cloudflare:workers';
-import Icon from './Icon.astro';
+import Icon from './UiIcon.astro';
 
-interface Props {
-	/** Número de WhatsApp (solo dígitos). Si no hay, solo se ofrece correo. */
-	waPhone?: string | null;
-}
-const { waPhone } = Astro.props;
-const hasWhatsapp = !!waPhone;
 const siteKey = env.TURNSTILE_SITE_KEY;
 const sent = Astro.url.searchParams.has('enviado');
 const error = Astro.url.searchParams.get('error');
 ---
 
-<form id="formulario" action="/api/contact" method="post" class="form" data-contact-form data-wa={waPhone} novalidate>
-	<div class="intro">
-		<h2>Envíame un mensaje</h2>
-		<p>Elige cómo quieres enviarlo: a mi correo, por WhatsApp o por ambos.</p>
+<form id="formulario" action="/api/contact" method="post" class="card scroll-mt-28 space-y-5 p-5 sm:p-8" data-contact-form novalidate>
+	<div>
+		<h2 class="text-2xl">Envíame un mensaje</h2>
+		<p class="mt-1 text-sm text-gray-300">Elige por dónde quieres que me llegue. Todo se envía desde aquí mismo.</p>
 	</div>
 
-	<fieldset class="channel" data-channel-group>
+	<fieldset class="channel-pill">
 		<legend class="sr-only">Enviar por</legend>
-		<label>
-			<input type="radio" name="channel" value="email" checked />
-			<span><Icon icon="envelope-simple" /> Correo</span>
-		</label>
-		{
-			hasWhatsapp && (
-				<>
-					<label>
-						<input type="radio" name="channel" value="whatsapp" />
-						<span><Icon icon="whatsapp-logo" /> WhatsApp</span>
-					</label>
-					<label>
-						<input type="radio" name="channel" value="both" />
-						<span>Ambos</span>
-					</label>
-				</>
-			)
-		}
+		<label><input type="radio" name="channel" value="email" checked /><span>Correo</span></label>
+		<label><input type="radio" name="channel" value="whatsapp" /><span>WhatsApp</span></label>
+		<label><input type="radio" name="channel" value="both" /><span>Ambos</span></label>
 	</fieldset>
 
-	<div class="row">
-		<div class="field">
-			<label for="cf-name">Nombre <span aria-hidden="true">*</span></label>
-			<input id="cf-name" name="name" required maxlength="100" autocomplete="name" />
+	<div class="grid gap-4 sm:grid-cols-2">
+		<div>
+			<label for="cf-name" class="field-label">Nombre <span class="req">*</span></label>
+			<input id="cf-name" name="name" class="field" required maxlength="100" autocomplete="name" />
 		</div>
-		<div class="field" data-email-field>
-			<label for="cf-email">Correo <span aria-hidden="true" data-email-required>*</span></label>
-			<input id="cf-email" name="email" type="email" required maxlength="200" autocomplete="email" />
-		</div>
-	</div>
-
-	<div class="row">
-		<div class="field">
-			<label for="cf-subject">Asunto <span aria-hidden="true">*</span></label>
-			<input id="cf-subject" name="subject" required maxlength="150" list="cf-subjects" />
-			<datalist id="cf-subjects">
-				<option value="Oportunidad laboral"></option>
-				<option value="Propuesta de proyecto"></option>
-				<option value="Colaboración"></option>
-				<option value="Consulta general"></option>
-			</datalist>
-		</div>
-		<div class="field">
-			<label for="cf-company">Empresa <span class="optional">(opcional)</span></label>
-			<input id="cf-company" name="company" maxlength="120" autocomplete="organization" />
+		<div>
+			<label for="cf-company" class="field-label">Empresa <span class="opt">(opcional)</span></label>
+			<input id="cf-company" name="company" class="field" maxlength="120" autocomplete="organization" />
 		</div>
 	</div>
 
-	<div class="field">
-		<label for="cf-message">Mensaje <span aria-hidden="true">*</span></label>
-		<textarea id="cf-message" name="message" rows="6" required maxlength="5000"></textarea>
+	<div class="grid gap-4 sm:grid-cols-2">
+		<div>
+			<label for="cf-email" class="field-label">Correo <span class="req" data-email-req>*</span><span class="opt" data-email-opt hidden>(o teléfono)</span></label>
+			<input id="cf-email" name="email" type="email" class="field" required maxlength="200" autocomplete="email" />
+		</div>
+		<div>
+			<label for="cf-phone" class="field-label">Teléfono <span class="opt">(opcional)</span></label>
+			<input id="cf-phone" name="phone" type="tel" class="field" maxlength="30" autocomplete="tel" placeholder="+506 …" />
+		</div>
+	</div>
+
+	<div>
+		<label for="cf-subject" class="field-label">Asunto <span class="req">*</span></label>
+		<input id="cf-subject" name="subject" class="field" required maxlength="150" list="cf-subjects" />
+		<datalist id="cf-subjects">
+			<option value="Oportunidad laboral"></option>
+			<option value="Propuesta de proyecto"></option>
+			<option value="Colaboración"></option>
+			<option value="Consulta general"></option>
+		</datalist>
+	</div>
+
+	<div>
+		<label for="cf-message" class="field-label">Mensaje <span class="req">*</span></label>
+		<textarea id="cf-message" name="message" rows="6" class="field resize-y" required maxlength="5000"></textarea>
 	</div>
 
 	<!-- Honeypot: invisible para personas -->
-	<div class="sr-only" aria-hidden="true">
+	<div class="hidden" aria-hidden="true">
 		<label>No llenar <input name="website" tabindex="-1" autocomplete="off" /></label>
 	</div>
 
-	{siteKey && <div class="cf-turnstile" data-sitekey={siteKey} data-language="es" data-theme="auto" data-turnstile></div>}
+	{siteKey && <div class="cf-turnstile" data-sitekey={siteKey} data-language="es" data-theme="auto"></div>}
 
-	<div class="actions">
-		<p data-status role="status" aria-live="polite" class:list={['status', sent ? 'ok' : error ? 'error' : '']}>
+	<div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+		<p data-status role="status" aria-live="polite" class:list={['text-sm', sent ? 'text-link' : 'text-red-500']}>
 			{sent ? '¡Gracias! Tu mensaje fue enviado.' : error}
 		</p>
-		<button type="submit" class="submit">
-			<span data-submit-label>Enviar correo</span>
-			<Icon icon="paper-plane-tilt" size="1.2em" />
+		<button type="submit" class="btn btn-primary !px-6 !py-3 text-base">
+			<Icon name="send" size={16} />
+			<span data-submit-label>Enviar mensaje</span>
 		</button>
 	</div>
-	<p class="hint" data-wa-hint hidden>Se abrirá WhatsApp con tu mensaje listo para enviar.</p>
 </form>
 
 {siteKey && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 
 <style>
-	.form {
-		display: grid;
-		gap: 1.25rem;
-		padding: 1.5rem;
-		background: var(--gray-999_40);
-		border: 1px solid var(--gray-800);
-		border-radius: 1.5rem;
-		box-shadow: var(--shadow-sm);
-		scroll-margin-top: 2rem;
+	.req {
+		color: var(--link-color);
 	}
 
-	.intro h2 {
-		font-size: var(--text-xl);
+	.opt {
+		color: var(--gray-400);
+		font-family: var(--font-body);
+		font-weight: 400;
 	}
 
-	.intro p {
-		margin-top: 0.5rem;
-		color: var(--gray-300);
-	}
-
-	/* Selector de canal con el estilo del menú de navegación */
-	.channel {
-		position: relative;
-		display: flex;
+	/* Selector de canal con el estilo del menú de la plantilla */
+	.channel-pill {
+		display: inline-flex;
 		flex-wrap: wrap;
-		gap: 0.25rem;
-		justify-self: start;
-		margin: 0;
-		padding: 0.375rem;
-		border: 0;
+		gap: 0.125rem;
+		margin-inline: 0;
+		padding: 0.3rem;
+		border: 1px solid var(--gray-800);
 		border-radius: 999rem;
 		background: radial-gradient(var(--gray-900), var(--gray-800) 150%);
-		box-shadow: var(--shadow-md);
+		box-shadow: var(--shadow-sm);
 		font-family: var(--font-brand);
 		font-weight: 500;
-		font-size: var(--text-sm);
+		font-size: var(--tpl-text-sm);
 	}
 
-	.channel label {
+	.channel-pill label {
 		position: relative;
 		cursor: pointer;
 	}
 
-	.channel input {
+	.channel-pill input {
 		position: absolute;
 		opacity: 0;
 		pointer-events: none;
 	}
 
-	.channel span {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4rem;
-		padding: 0.5rem 1rem;
+	.channel-pill span {
+		display: inline-block;
+		padding: 0.45rem 1rem;
 		border-radius: 999rem;
 		color: var(--gray-300);
 		transition:
@@ -157,203 +126,52 @@ const error = Astro.url.searchParams.get('error');
 			background-color var(--theme-transition);
 	}
 
-	.channel label:hover span {
+	.channel-pill label:hover span {
 		color: var(--gray-100);
 		background-color: var(--accent-subtle-overlay);
 	}
 
-	.channel input:checked + span {
+	.channel-pill input:checked + span {
 		color: var(--accent-text-over);
 		background-color: var(--accent-regular);
 	}
 
-	.channel input:focus-visible + span {
+	.channel-pill input:focus-visible + span {
 		outline: 2px solid var(--accent-regular);
 		outline-offset: 2px;
-	}
-
-	.row {
-		display: grid;
-		gap: 1.25rem;
-	}
-
-	.field {
-		display: grid;
-		gap: 0.4rem;
-	}
-
-	.field label {
-		font-family: var(--font-brand);
-		font-weight: 500;
-		color: var(--gray-100);
-	}
-
-	.field label span {
-		color: var(--link-color);
-	}
-
-	.field label .optional {
-		color: var(--gray-400);
-		font-family: var(--font-body);
-		font-weight: 400;
-	}
-
-	input,
-	textarea {
-		width: 100%;
-		padding: 0.75rem 1rem;
-		font: inherit;
-		color: var(--gray-0);
-		background: var(--gray-999);
-		border: 1px solid var(--gray-800);
-		border-radius: 0.75rem;
-		box-shadow: var(--shadow-sm);
-		transition:
-			border-color var(--theme-transition),
-			box-shadow var(--theme-transition);
-	}
-
-	textarea {
-		resize: vertical;
-	}
-
-	input:focus,
-	textarea:focus {
-		outline: none;
-		border-color: var(--accent-regular);
-		box-shadow: 0 0 0 3px var(--accent-overlay);
-	}
-
-	.actions {
-		display: flex;
-		flex-direction: column-reverse;
-		gap: 1rem;
-	}
-
-	.status {
-		font-size: var(--text-sm);
-	}
-
-	.status.ok {
-		color: var(--link-color);
-	}
-
-	.status.error {
-		color: #e5484d;
-	}
-
-	.submit {
-		position: relative;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 0.8em;
-		padding: 0.8rem 2rem;
-		border: 0;
-		border-radius: 999rem;
-		color: var(--accent-text-over);
-		background: var(--gradient-accent-orange);
-		box-shadow: var(--shadow-md);
-		font: inherit;
-		font-size: var(--text-lg);
-		line-height: 1.1;
-		cursor: pointer;
-		overflow: hidden;
-	}
-
-	.submit.wa {
-		background: #25d366;
-		color: #0b1a10;
-	}
-
-	.submit::after {
-		content: '';
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-		transition: background-color var(--theme-transition);
-		mix-blend-mode: overlay;
-	}
-
-	.submit:hover::after,
-	.submit:focus::after {
-		background-color: hsla(var(--gray-999-basis), 0.3);
-	}
-
-	.submit:disabled {
-		opacity: 0.6;
-		cursor: progress;
-	}
-
-	.hint {
-		font-size: var(--text-sm);
-		color: var(--gray-400);
-	}
-
-	@media (min-width: 50em) {
-		.form {
-			padding: 2.5rem;
-		}
-
-		.row {
-			grid-template-columns: 1fr 1fr;
-		}
-
-		.actions {
-			flex-direction: row;
-			align-items: center;
-			justify-content: space-between;
-		}
 	}
 </style>
 
 <script>
-	import { whatsappUrl } from '../lib/whatsapp';
-
 	const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
 	if (form) {
 		const status = form.querySelector<HTMLElement>('[data-status]')!;
 		const button = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
 		const label = form.querySelector<HTMLElement>('[data-submit-label]')!;
 		const email = form.querySelector<HTMLInputElement>('#cf-email')!;
-		const emailStar = form.querySelector<HTMLElement>('[data-email-required]')!;
-		const turnstile = form.querySelector<HTMLElement>('[data-turnstile]');
-		const waHint = form.querySelector<HTMLElement>('[data-wa-hint]')!;
-		const WA_PHONE = form.dataset.wa ?? '';
+		const phone = form.querySelector<HTMLInputElement>('#cf-phone')!;
+		const emailReq = form.querySelector<HTMLElement>('[data-email-req]')!;
+		const emailOpt = form.querySelector<HTMLElement>('[data-email-opt]')!;
 
 		const channel = () => (new FormData(form).get('channel') as string) || 'email';
-
-		const setStatus = (msg: string, kind: 'ok' | 'error' | '') => {
+		const setStatus = (msg: string, ok: boolean) => {
 			status.textContent = msg;
-			status.className = `status ${kind}`;
+			status.className = `text-sm ${ok ? 'text-link' : 'text-red-500'}`;
 		};
 
+		// Con WhatsApp basta un correo o un teléfono para poder responder.
 		const sync = () => {
 			const c = channel();
-			const usesEmail = c !== 'whatsapp';
-			email.required = usesEmail;
-			emailStar.hidden = !usesEmail;
-			if (turnstile) turnstile.hidden = !usesEmail;
-			waHint.hidden = c === 'email';
-			label.textContent = c === 'email' ? 'Enviar correo' : c === 'whatsapp' ? 'Continuar en WhatsApp' : 'Enviar por ambos';
-			button.classList.toggle('wa', c === 'whatsapp');
+			const onlyWa = c === 'whatsapp';
+			email.required = !onlyWa;
+			emailReq.hidden = onlyWa;
+			emailOpt.hidden = !onlyWa;
+			label.textContent = c === 'email' ? 'Enviar por correo' : c === 'whatsapp' ? 'Enviar por WhatsApp' : 'Enviar por ambos';
 		};
 		form.addEventListener('change', (e) => {
 			if ((e.target as HTMLInputElement).name === 'channel') sync();
 		});
 		sync();
-
-		const buildWhatsapp = () => {
-			const d = new FormData(form);
-			const get = (k: string) => String(d.get(k) ?? '').trim();
-			return whatsappUrl(WA_PHONE, {
-				name: get('name'),
-				subject: get('subject'),
-				message: get('message'),
-				email: get('email'),
-				company: get('company'),
-			});
-		};
 
 		form.addEventListener('submit', async (e) => {
 			e.preventDefault();
@@ -361,17 +179,14 @@ const error = Astro.url.searchParams.get('error');
 				form.reportValidity();
 				return;
 			}
-			const c = channel();
-
-			// WhatsApp se abre de inmediato (dentro del clic) para que el navegador no lo bloquee.
-			if (c !== 'email') window.open(buildWhatsapp(), '_blank', 'noopener');
-			if (c === 'whatsapp') {
-				setStatus('Abrimos WhatsApp con tu mensaje. Solo falta que lo envíes desde ahí.', 'ok');
+			if (channel() === 'whatsapp' && !email.value.trim() && !phone.value.trim()) {
+				setStatus('Indica un correo o un teléfono para poder responderte.', false);
+				phone.focus();
 				return;
 			}
 
 			button.disabled = true;
-			setStatus('Enviando…', '');
+			setStatus('Enviando…', true);
 			try {
 				const res = await fetch(form.action, {
 					method: 'POST',
@@ -379,13 +194,13 @@ const error = Astro.url.searchParams.get('error');
 					headers: { Accept: 'application/json' },
 				});
 				const data = (await res.json()) as { ok: boolean; message: string };
-				setStatus(data.message, data.ok ? 'ok' : 'error');
+				setStatus(data.message, data.ok);
 				if (data.ok) {
 					form.reset();
 					sync();
 				}
 			} catch {
-				setStatus('No se pudo enviar. Revisa tu conexión e intenta de nuevo.', 'error');
+				setStatus('No se pudo enviar. Revisa tu conexión e intenta de nuevo.', false);
 			} finally {
 				button.disabled = false;
 				// @ts-expect-error turnstile lo carga el script de Cloudflare

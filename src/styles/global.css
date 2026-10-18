@@ -9,10 +9,15 @@ svg {
 	display: inline;
 }
 
+html {
+	scroll-behavior: smooth;
+	scroll-padding-top: 5.5rem;
+}
+
 html,
 body {
 	min-height: 100%;
-	overflow-x: hidden;
+	overflow-x: clip;
 }
 
 body {
@@ -51,23 +56,23 @@ h5 {
 }
 
 h1 {
-	font-size: var(--text-5xl);
+	font-size: var(--tpl-text-5xl);
 }
 
 h2 {
-	font-size: var(--text-4xl);
+	font-size: var(--tpl-text-4xl);
 }
 
 h3 {
-	font-size: var(--text-3xl);
+	font-size: var(--tpl-text-3xl);
 }
 
 h4 {
-	font-size: var(--text-2xl);
+	font-size: var(--tpl-text-2xl);
 }
 
 h5 {
-	font-size: var(--text-xl);
+	font-size: var(--tpl-text-xl);
 }
 
 /* Utilities */
@@ -150,14 +155,104 @@ h5 {
 
 }
 
-/* ===== Utilidades propias del rediseño ===== */
-.box {
-	border: 1px solid var(--gray-800);
-	border-radius: 1.5rem;
-	background-color: var(--gray-999_40);
-	box-shadow: var(--shadow-sm);
+/* ===== Componentes del rediseño con los tokens de la plantilla =====
+ * Estructura: la del primer rediseño. Estilo: colores, gradientes, sombras y tipografías de la plantilla.
+ */
+@layer components {
+	.container-page {
+		@apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+	}
+
+	.eyebrow {
+		@apply text-xs font-semibold tracking-[0.18em] text-link uppercase;
+		font-family: var(--font-brand);
+	}
+
+	/* Botón principal: gradiente de la plantilla (CallToAction) */
+	.btn {
+		@apply relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full px-5 py-2.5 text-sm font-medium whitespace-nowrap no-underline transition-[color,box-shadow];
+		font-family: var(--font-brand);
+	}
+	.btn-primary {
+		color: var(--accent-text-over);
+		background: var(--gradient-accent-orange);
+		box-shadow: var(--shadow-md);
+	}
+	.btn-primary::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		mix-blend-mode: overlay;
+		transition: background-color var(--theme-transition);
+	}
+	.btn-primary:hover::after,
+	.btn-primary:focus-visible::after {
+		background-color: hsla(var(--gray-999-basis), 0.3);
+	}
+	/* Botón secundario: píldora gris del menú de la plantilla */
+	.btn-secondary {
+		color: var(--gray-200);
+		background: radial-gradient(var(--gray-900), var(--gray-800) 150%);
+		border: 1px solid var(--gray-800);
+		box-shadow: var(--shadow-sm);
+	}
+	.btn-secondary:hover,
+	.btn-secondary:focus-visible {
+		color: var(--gray-0);
+		box-shadow: var(--shadow-md);
+	}
+	.btn:disabled {
+		@apply cursor-progress opacity-60;
+	}
+
+	/* Tarjeta: la «box» de la plantilla */
+	.card {
+		border: 1px solid var(--gray-800);
+		border-radius: 1.25rem;
+		background-color: var(--gray-999_40);
+		box-shadow: var(--shadow-sm);
+	}
+
+	/* Etiqueta de tecnología o dato corto */
+	.chip {
+		@apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs leading-tight whitespace-nowrap;
+		color: var(--gray-200);
+		background: radial-gradient(var(--gray-900), var(--gray-800) 150%);
+		border: 1px solid var(--gray-800);
+	}
+
+	.link {
+		@apply font-medium text-link underline-offset-4 hover:underline;
+	}
+
+	.field-label {
+		@apply mb-1.5 block text-sm;
+		font-family: var(--font-brand);
+		font-weight: 500;
+		color: var(--gray-100);
+	}
+	.field {
+		@apply block w-full rounded-xl px-3.5 py-2.5 text-sm transition-[border-color,box-shadow] focus:outline-none;
+		color: var(--gray-0);
+		background: var(--gray-999);
+		border: 1px solid var(--gray-800);
+		box-shadow: var(--shadow-sm);
+	}
+	.field::placeholder {
+		color: var(--gray-500);
+	}
+	.field:focus {
+		border-color: var(--accent-regular);
+		box-shadow: 0 0 0 3px var(--accent-overlay);
+	}
 }
 
+/* Texto Markdown renderizado (experiencia, proyectos, sobre mí) */
+.prose-portfolio {
+	color: var(--gray-300);
+	line-height: 1.65;
+}
 .prose-portfolio > :where(* + *) {
 	margin-top: 1rem;
 }
@@ -165,25 +260,29 @@ h5 {
 	padding-inline-start: 1.25rem;
 	list-style: disc;
 }
+.prose-portfolio :where(ol) {
+	padding-inline-start: 1.25rem;
+	list-style: decimal;
+}
 .prose-portfolio :where(li + li) {
 	margin-top: 0.4rem;
 }
 .prose-portfolio :where(li)::marker {
-	color: var(--accent-regular);
+	color: var(--link-color);
 }
 .prose-portfolio :where(strong) {
 	color: var(--gray-100);
 }
 .prose-portfolio :where(h2, h3, h4) {
 	margin: 1.75rem 0 0.75rem;
-	font-size: var(--text-xl);
+	font-size: var(--tpl-text-lg);
 }
 .prose-portfolio :where(a) {
 	color: var(--link-color);
 	text-underline-offset: 0.2em;
 }
 .prose-portfolio :where(img) {
-	border-radius: 1.5rem;
+	border-radius: 1rem;
 	border: 1px solid var(--gray-800);
 	box-shadow: var(--shadow-sm);
 }
@@ -192,4 +291,9 @@ h5 {
 	padding: 0.1em 0.35em;
 	border-radius: 0.35rem;
 	background: var(--gray-900);
+}
+.prose-portfolio :where(blockquote) {
+	padding-inline-start: 1rem;
+	border-inline-start: 0.25rem solid var(--accent-regular);
+	color: var(--gray-200);
 }

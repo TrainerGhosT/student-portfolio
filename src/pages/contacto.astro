@@ -2,48 +2,22 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ContactChannels from '../components/ContactChannels.astro';
 import ContactForm from '../components/ContactForm.astro';
-import Hero from '../components/Hero.astro';
 import { getSingle } from '../lib/content';
-import { profileWhatsapp } from '../lib/whatsapp';
 
 const profile = (await getSingle('profile'))!.data;
 ---
 
-<BaseLayout title="Formas de Contacto" description={`Formas de contactar a ${profile.name}: correo, WhatsApp o formulario.`}>
-	<div class="stack gap-20">
-		<main class="wrapper stack gap-10">
-			<Hero title="Formas de Contacto" tagline="Escríbeme por el medio que prefieras: correo, WhatsApp o el formulario." />
+<BaseLayout title="Contacto" description={`Formas de contactar a ${profile.name}: correo, WhatsApp o formulario.`}>
+	<section class="container-page pt-10 pb-8 sm:pt-16">
+		<p class="eyebrow mb-2">Contacto</p>
+		<h1 class="text-4xl sm:text-5xl">Hablemos</h1>
+		<p class="mt-4 max-w-2xl text-lg text-gray-300">
+			Escríbeme por el medio que prefieras. Con el formulario el mensaje me llega por correo, por WhatsApp o por ambos.
+		</p>
+	</section>
 
-			<div class="cards-row"><ContactChannels profile={profile} part="cards" /></div>
-
-			<div class="layout">
-				<ContactChannels profile={profile} part="whatsapp" />
-				<ContactForm waPhone={profileWhatsapp(profile)} />
-			</div>
-		</main>
-	</div>
+	<section class="container-page grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+		<ContactChannels profile={profile} />
+		<ContactForm />
+	</section>
 </BaseLayout>
-
-<style>
-	.cards-row {
-		width: 100%;
-		max-width: 1200px;
-		margin-inline: auto;
-	}
-
-	.layout {
-		display: grid;
-		gap: 2rem;
-		width: 100%;
-		max-width: 1200px;
-		margin-inline: auto;
-	}
-
-	@media (min-width: 64em) {
-		.layout {
-			grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
-			align-items: start;
-			gap: 2.5rem;
-		}
-	}
-</style>

@@ -20,14 +20,9 @@ export interface Profile {
 	location?: string;
 	birthDate?: string;
 	ageDisplay?: 'age' | 'birthdate' | 'both' | 'none';
-	roles?: string[];
-	avatar?: string;
 	availability?: string;
 	focus?: string[];
 	email?: string;
-	phone?: string;
-	whatsapp?: string;
-	whatsappMessage?: string;
 	linkedin?: string;
 	github?: string;
 }

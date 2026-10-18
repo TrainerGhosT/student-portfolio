@@ -1,7 +1,7 @@
 ---
 import '../styles/admin.css';
 import Icon, { type IconName } from '../components/UiIcon.astro';
-import Monogram from '../components/Monogram.astro';
+import BrandMark from '../components/BrandMark.astro';
 import ThemeToggle from '../components/ThemeToggle.astro';
 
 interface Props {
@@ -54,7 +54,7 @@ const active = (href: string) => (href === '/admin' ? path === '/admin' : path.s
 			<aside class="border-b border-zinc-200 bg-white md:sticky md:top-0 md:h-dvh md:w-60 md:shrink-0 md:border-r md:border-b-0 dark:border-zinc-800 dark:bg-zinc-900">
 				<div class="flex items-center justify-between gap-2 px-4 py-4">
 					<a href="/admin" class="flex items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-						<Monogram /> Panel
+						<BrandMark /> Panel
 					</a>
 					<ThemeToggle />
 				</div>

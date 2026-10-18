@@ -12,34 +12,7 @@
  */
 
 
-import {
-	Award, BadgeCheck, Briefcase, Cake, ExternalLink, FileText, Download, GraduationCap, Mail, MessageCircle, Phone, Send, User,
-} from 'lucide-static';
-import { siWhatsapp } from 'simple-icons';
-
-/** Adapta un ícono de Lucide (24×24, trazo) al lienzo 256×256 de esta plantilla. */
-const lucide = (svg: string) =>
-	`<g transform="scale(10.6667)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${svg
-		.replace(/^[\s\S]*?<svg[^>]*>/, '')
-		.replace(/<\/svg>\s*$/, '')}</g>`;
-/** Adapta un ícono de marca de Simple Icons (24×24, relleno). */
-const brand = (path: string) => `<path transform="scale(10.6667)" stroke="none" d="${path}"/>`;
-
 export const iconPaths = {
-	'whatsapp-logo': brand(siWhatsapp.path),
-	download: lucide(Download),
-	'file-text': lucide(FileText),
-	external: lucide(ExternalLink),
-	send: lucide(Send),
-	briefcase: lucide(Briefcase),
-	graduation: lucide(GraduationCap),
-	award: lucide(Award),
-	'badge-check': lucide(BadgeCheck),
-	cake: lucide(Cake),
-	user: lucide(User),
-	phone: lucide(Phone),
-	mail: lucide(Mail),
-	message: lucide(MessageCircle),
 	'terminal-window': `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="16" d="m80 96 40 32-40 32m56 0h40"/><rect width="192" height="160" x="32" y="48" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="16.97" rx="8.5"/>`,
 	'device-mobile': `<rect width="256" height="256" fill="none"/><rect x="64" y="24" width="128" height="208" rx="16" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"/><line x1="64" y1="56" x2="192" y2="56" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"/><line x1="64" y1="200" x2="192" y2="200" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"/>`,
 	'calendar': `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="16" d="M40 88h176M64 40v96m128-96v96M32 48h192a8 8 0 0 1 8 8v160a8 8 0 0 1-8 8H32a8 8 0 0 1-8-8V56a8 8 0 0 1 8-8z"/>`,

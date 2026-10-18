@@ -1,6 +1,6 @@
 ---
 import MainHead from '../components/MainHead.astro';
-import Nav from '../components/Nav.astro';
+import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { getSingle, type Profile } from '../lib/content';
 
@@ -19,9 +19,12 @@ const profile: Profile = (await getSingle('profile'))?.data ?? { name: 'Dylan Mo
 		<MainHead title={title} description={description} profile={profile} noindex={noindex} />
 	</head>
 	<body>
+		<a href="#contenido" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-full focus:bg-gray-999 focus:px-4 focus:py-2">
+			Saltar al contenido
+		</a>
 		<div class="stack backgrounds">
-			<Nav profile={profile} />
-			<main id="contenido">
+			<Header name={profile.name} />
+			<main id="contenido" class="flex-1">
 				<slot />
 			</main>
 			<Footer profile={profile} />

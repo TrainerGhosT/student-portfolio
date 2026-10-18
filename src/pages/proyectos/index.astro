@@ -1,90 +1,71 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import ContactCTA from '../../components/ContactCTA.astro';
-import Grid from '../../components/Grid.astro';
-import Hero from '../../components/Hero.astro';
-import PortfolioPreview from '../../components/PortfolioPreview.astro';
-import TechIcon from '../../components/TechIcon.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
 import { getEntries } from '../../lib/content';
 
 const projects = await getEntries('projects');
 const tags = [...new Set(projects.flatMap((p) => p.data.tags ?? []))].sort((a, b) => a.localeCompare(b, 'es'));
 ---
 
-<BaseLayout title="Galería de Proyectos" description="Proyectos académicos, personales y profesionales.">
-	<div class="stack gap-20">
-		<main class="wrapper stack gap-8">
-			<Hero
-				title="Galería de Proyectos"
-				tagline="Proyectos que he desarrollado en la universidad, en el trabajo y por iniciativa propia."
-				align="start"
-			/>
+<BaseLayout title="Proyectos" description="Proyectos académicos, personales y profesionales.">
+	<section class="container-page pt-10 pb-6 sm:pt-16">
+		<p class="eyebrow mb-2">Portafolio</p>
+		<h1 class="text-4xl sm:text-5xl">Proyectos</h1>
+		<p class="mt-4 max-w-2xl text-lg text-gray-300">
+			Proyectos desarrollados en la universidad, en el trabajo y por iniciativa propia. Filtra por tecnología para encontrar algo específico.
+		</p>
 
+		{
+			tags.length > 1 && (
+				<div class="mt-8 flex flex-wrap gap-2" role="group" aria-label="Filtrar por tecnología" data-filters>
+					<button type="button" data-tag="" aria-pressed="true" class="filter">Todos</button>
+					{tags.map((t) => (
+						<button type="button" data-tag={t} aria-pressed="false" class="filter">
+							{t}
+						</button>
+					))}
+				</div>
+			)
+		}
+	</section>
+
+	<section class="container-page pb-10">
+		<ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" data-projects>
 			{
-				tags.length > 1 && (
-					<div class="filters" role="group" aria-label="Filtrar por tecnología" data-filters>
-						<button type="button" data-tag="" aria-pressed="true">Todos</button>
-						{tags.map((t) => (
-							<button type="button" data-tag={t} aria-pressed="false">
-								<TechIcon name={t} />
-								{t}
-							</button>
-						))}
-					</div>
-				)
+				projects.map((p) => (
+					<li data-tags={(p.data.tags ?? []).join('|')}>
+						<ProjectCard project={p} />
+					</li>
+				))
 			}
-
-			<Grid variant="offset">
-				{
-					projects.map((project) => (
-						<li data-tags={(project.data.tags ?? []).join('|')}>
-							<PortfolioPreview project={project} />
-						</li>
-					))
-				}
-			</Grid>
-		</main>
-		<ContactCTA />
-	</div>
+		</ul>
+		{projects.length === 0 && <p class="text-gray-400">Aún no hay proyectos publicados.</p>}
+	</section>
 </BaseLayout>
 
 <style>
-	.filters {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-	}
-
-	.filters button {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4rem;
-		padding: 0.4rem 0.9rem;
-		border: 1px solid var(--gray-800);
+	.filter {
+		padding: 0.35rem 0.9rem;
 		border-radius: 999rem;
 		font: inherit;
-		font-size: var(--text-sm);
+		font-size: var(--tpl-text-sm);
 		color: var(--gray-300);
 		background: radial-gradient(var(--gray-900), var(--gray-800) 150%);
-		box-shadow: var(--shadow-sm);
+		border: 1px solid var(--gray-800);
 		cursor: pointer;
 		transition:
 			color var(--theme-transition),
 			background-color var(--theme-transition);
 	}
 
-	.filters button:hover {
+	.filter:hover {
 		color: var(--gray-100);
 	}
 
-	.filters button[aria-pressed='true'] {
+	.filter[aria-pressed='true'] {
 		color: var(--accent-text-over);
 		background: var(--accent-regular);
 		border-color: var(--accent-regular);
-	}
-
-	.filters button[aria-pressed='true'] :global(svg) {
-		fill: currentColor;
 	}
 
 	li[hidden] {
@@ -94,15 +75,12 @@ const tags = [...new Set(projects.flatMap((p) => p.data.tags ?? []))].sort((a, b
 
 <script>
 	const buttons = document.querySelectorAll<HTMLButtonElement>('[data-filters] button');
-	const items = document.querySelectorAll<HTMLElement>('[data-tags]');
-	const grid = items[0]?.parentElement;
+	const items = document.querySelectorAll<HTMLElement>('[data-projects] > li');
 	buttons.forEach((btn) =>
 		btn.addEventListener('click', () => {
 			const tag = btn.dataset.tag ?? '';
 			buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
 			items.forEach((li) => (li.hidden = !!tag && !(li.dataset.tags ?? '').split('|').includes(tag)));
-			// El efecto escalonado de la grilla solo se mantiene sin filtro.
-			grid?.classList.toggle('offset', !tag);
 		}),
 	);
 </script>

@@ -1,0 +1,77 @@
+---
+import { formatPeriod, type Doc, type Project } from '../lib/content';
+import TechPill from './TechPill.astro';
+import Icon from './UiIcon.astro';
+
+interface Props {
+	project: Doc<Project>;
+}
+const { slug, data } = Astro.props.project;
+---
+
+<article class="card project group relative flex h-full flex-col overflow-hidden">
+	<div class="cover aspect-[16/9] overflow-hidden border-b border-gray-800">
+		{
+			data.image ? (
+				<img
+					src={data.image}
+					alt={data.imageAlt ?? ''}
+					loading="lazy"
+					decoding="async"
+					class="block size-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.03]"
+				/>
+			) : (
+				<div class="placeholder flex size-full items-end p-5">
+					<span class="text-sm text-white/85">{data.context}</span>
+				</div>
+			)
+		}
+	</div>
+	<div class="flex flex-1 flex-col p-5 sm:p-6">
+		<p class="text-xs text-gray-400">
+			{data.context ? `${data.context} · ` : ''}{formatPeriod(data.date)}
+		</p>
+		<h3 class="mt-1.5 text-lg">
+			<a href={`/proyectos/${slug}`} class="text-gray-0 no-underline after:absolute after:inset-0">
+				{data.title}
+			</a>
+		</h3>
+		<p class="mt-2 line-clamp-3 text-sm text-gray-300">{data.summary}</p>
+		{
+			data.tags && data.tags.length > 0 && (
+				<div class="mt-4 flex flex-wrap gap-1.5" aria-label="Tecnologías">
+					{data.tags.slice(0, 5).map((t) => (
+						<TechPill name={t} />
+					))}
+				</div>
+			)
+		}
+		<span class="mt-auto inline-flex items-center gap-1 pt-5 text-sm font-medium text-link" style="font-family: var(--font-brand)">
+			Ver detalle <Icon name="arrow-right" size={14} class="transition-transform group-hover:translate-x-0.5" />
+		</span>
+	</div>
+</article>
+
+<style>
+	.project {
+		transition:
+			box-shadow var(--theme-transition),
+			border-color var(--theme-transition);
+	}
+
+	.project:hover {
+		box-shadow: var(--shadow-md);
+		border-color: var(--gray-700);
+	}
+
+	.cover {
+		background: var(--gradient-subtle);
+	}
+
+	.placeholder {
+		background:
+			url('/assets/backgrounds/noise.png') top center/220px repeat,
+			var(--gradient-accent);
+		background-blend-mode: overlay, normal;
+	}
+</style>

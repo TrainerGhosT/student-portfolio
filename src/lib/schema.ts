@@ -57,7 +57,7 @@ export const COLLECTIONS = {
 			{ name: 'birthDate', label: 'Fecha de nacimiento', type: 'date', placeholder: '2001-12-16' },
 			{
 				name: 'ageDisplay',
-				label: 'Mostrar en el inicio',
+				label: 'Mostrar en el inicio (edad/fecha)',
 				type: 'select',
 				help: 'La edad se calcula sola cada día a partir de la fecha de nacimiento.',
 				options: [
@@ -67,14 +67,9 @@ export const COLLECTIONS = {
 					{ value: 'none', label: 'No mostrar' },
 				],
 			},
-			{ name: 'roles', label: 'Etiquetas del inicio', type: 'tags', help: 'Píldoras bajo el titular. Separadas por comas.' },
-			{ name: 'avatar', label: 'Imagen del inicio (opcional)', type: 'image', help: 'Si la dejas vacía se muestra el monograma con tus iniciales.' },
 			{ name: 'availability', label: 'Disponibilidad', type: 'text', placeholder: 'Abierto a nuevas oportunidades' },
 			{ name: 'focus', label: 'Áreas de enfoque', type: 'tags', help: 'Separadas por comas.' },
 			{ name: 'email', label: 'Correo público', type: 'email' },
-			{ name: 'phone', label: 'Teléfono visible', type: 'text', placeholder: '+506 8686-1329' },
-			{ name: 'whatsapp', label: 'WhatsApp (solo dígitos, con código de país)', type: 'text', placeholder: '50686861329' },
-			{ name: 'whatsappMessage', label: 'Mensaje inicial de WhatsApp', type: 'text' },
 			{ name: 'linkedin', label: 'LinkedIn', type: 'url' },
 			{ name: 'github', label: 'GitHub', type: 'url' },
 		],

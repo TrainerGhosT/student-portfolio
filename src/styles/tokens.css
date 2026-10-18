@@ -54,15 +54,15 @@
 		0px 16px 16px rgba(9, 11, 17, 0.1), 0px 4px 9px rgba(9, 11, 17, 0.12);
 
 	/* Text Sizes */
-	--text-sm: 0.875rem;
-	--text-base: 1rem;
-	--text-md: 1.125rem;
-	--text-lg: 1.25rem;
-	--text-xl: 1.625rem;
-	--text-2xl: 2.125rem;
-	--text-3xl: 2.625rem;
-	--text-4xl: 3.5rem;
-	--text-5xl: 4.5rem;
+	--tpl-text-sm: 0.875rem;
+	--tpl-text-base: 1rem;
+	--tpl-text-md: 1.125rem;
+	--tpl-text-lg: 1.25rem;
+	--tpl-text-xl: 1.625rem;
+	--tpl-text-2xl: 2.125rem;
+	--tpl-text-3xl: 2.625rem;
+	--tpl-text-4xl: 3.5rem;
+	--tpl-text-5xl: 4.5rem;
 
 	/* Fonts */
 	--font-system: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,

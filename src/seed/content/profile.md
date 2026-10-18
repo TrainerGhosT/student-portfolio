@@ -5,19 +5,12 @@ tagline: Diseño e implemento software que convierte tareas manuales en procesos
 location: Cartago, Costa Rica
 birthDate: 2001-12-16
 ageDisplay: age
-roles:
-  - Developer
-  - Automatización
-  - Cloud
 availability: Abierto a nuevas oportunidades y colaboraciones
 focus:
   - Automatización de procesos
   - Arquitectura serverless
   - Desarrollo full-stack
 email: dylanmont15@gmail.com
-phone: "+506 8686-1329"
-whatsapp: "50686861329"
-whatsappMessage: Hola Dylan, vi tu portafolio y me gustaría conversar contigo.
 linkedin: https://www.linkedin.com/in/dylan-montoyam/
 github: https://github.com/TrainerGhosT
 ---

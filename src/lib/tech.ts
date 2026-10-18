@@ -83,6 +83,9 @@ const MAP: Record<string, TechIcon> = {
 	redes: generic(Network),
 };
 
+/** Pon `false` para mostrar las tecnologías solo con texto (sin logo). */
+export const SHOW_TECH_LOGOS = true;
+
 export function techIcon(name: string): TechIcon | null {
 	return MAP[name.trim().toLowerCase()] ?? null;
 }

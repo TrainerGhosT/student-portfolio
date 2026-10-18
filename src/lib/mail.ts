@@ -8,9 +8,11 @@ export interface ContactMessage {
 	subject: string;
 	message: string;
 	company?: string;
+	phone?: string;
 	read?: boolean;
+	channel?: 'email' | 'whatsapp' | 'both';
 	emailStatus?: 'sent' | 'failed' | 'skipped';
-	channel?: 'email' | 'both';
+	whatsappStatus?: 'sent' | 'failed' | 'skipped';
 }
 
 const escapeHtml = (s: string) =>
@@ -36,14 +38,15 @@ export async function sendContactEmail(msg: ContactMessage): Promise<'sent' | 'f
     <tr><td style="padding:2px 12px 2px 0;color:#71717a">Nombre</td><td>${escapeHtml(msg.name)}</td></tr>
     <tr><td style="padding:2px 12px 2px 0;color:#71717a">Correo</td><td><a href="mailto:${escapeHtml(msg.email)}">${escapeHtml(msg.email)}</a></td></tr>
     ${msg.company ? `<tr><td style="padding:2px 12px 2px 0;color:#71717a">Empresa</td><td>${escapeHtml(msg.company)}</td></tr>` : ''}
+    ${msg.phone ? `<tr><td style="padding:2px 12px 2px 0;color:#71717a">Teléfono</td><td>${escapeHtml(msg.phone)}</td></tr>` : ''}
   </table>
-  <div style="white-space:pre-wrap;font-size:14px;line-height:1.6;border-left:3px solid #0d9488;padding-left:12px">${escapeHtml(msg.message)}</div>
+  <div style="white-space:pre-wrap;font-size:14px;line-height:1.6;border-left:3px solid #7611a6;padding-left:12px">${escapeHtml(msg.message)}</div>
   <p style="font-size:12px;color:#71717a;margin-top:24px">Responde directamente a este correo para contestarle a ${escapeHtml(msg.name)}.</p>
 </div>`;
 
 	const text = `Nuevo mensaje del portafolio\n\nAsunto: ${msg.subject}\nNombre: ${msg.name}\nCorreo: ${msg.email}\n${
 		msg.company ? `Empresa: ${msg.company}\n` : ''
-	}\n${msg.message}\n`;
+	}${msg.phone ? `Teléfono: ${msg.phone}\n` : ''}\n${msg.message}\n`;
 
 	let res: Response;
 	try {

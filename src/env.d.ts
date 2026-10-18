@@ -14,5 +14,14 @@ declare namespace Cloudflare {
 	interface Env {
 		RESEND_API_KEY: string;
 		TURNSTILE_SECRET_KEY: string;
+		// WhatsApp (ver src/lib/whatsapp.ts)
+		WHATSAPP_PROVIDER: string;
+		WHATSAPP_PHONE: string;
+		CALLMEBOT_APIKEY: string;
+		META_WA_TOKEN: string;
+		META_WA_PHONE_NUMBER_ID: string;
+		META_WA_TEMPLATE: string;
+		META_WA_TEMPLATE_LANG: string;
+		META_GRAPH_VERSION: string;
 	}
 }

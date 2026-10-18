@@ -6,11 +6,11 @@ El contenido (Markdown) vive en **Cloudflare R2** y se edita desde un panel priv
 | Pieza | Tecnología |
 | --- | --- |
 | Framework | Astro 7 (`output: 'server'`) + `@astrojs/cloudflare` 14 |
-| Diseño | Plantilla «Portfolio» original de Astro (colores, fondos, tipografías Rubik + Public Sans) |
+| Diseño | Estructura propia + colores, fondos, sombras y tipografías (Rubik + Public Sans) de la plantilla «Portfolio» de Astro |
 | Estilos | Tailwind CSS 4 (`@tailwindcss/vite`) conectado a las variables de la plantilla |
 | Contenido | Markdown con frontmatter en R2 (bucket `portfolio-content`) |
 | Admin | `/admin`, protegido con **Cloudflare Access** + validación del JWT en el Worker |
-| Contacto | Un formulario, tres opciones: **correo** (Worker → Resend + copia en R2), **WhatsApp** (abre el chat con el mensaje escrito) o **ambos** |
+| Contacto | Un formulario que entrega el mensaje desde el servidor por **correo** (Resend), **WhatsApp** (CallMeBot o WhatsApp Cloud API) o **ambos**, con copia en R2 |
 | CV | `/cv` (visor) y `/cv.pdf` (`?descargar` para bajarlo). Se reemplaza desde el admin |
 
 > Cloudflare Pages ya no es compatible con el adaptador de Astro (v13+). Cloudflare recomienda Workers
@@ -82,7 +82,7 @@ messages/<fecha>-<id>.json    # copia de cada mensaje del formulario
 ### 1. Dominio (recomendado: Cloudflare Registrar)
 
 1. Crea una cuenta en <https://dash.cloudflare.com> y entra a **Domain Registration → Register Domains**.
-2. Busca el nombre (p. ej. `dylanmontoya.dev`) y cómpralo. Cloudflare vende a precio de costo, sin margen (aprox. US$8 el primer año y US$12 al renovar un .dev, según precios de oct. 2026).
+2. Busca el nombre (p. ej. `dylanmontoya.dev`) y cómpralo. Cloudflare cobra el precio de costo y no sube la renovación.
 3. Como el dominio ya queda en Cloudflare, no hay que configurar DNS ni nameservers.
 
 Alternativa gratis el primer año: con el **GitHub Student Developer Pack** (Name.com ofrece `.dev`, `.app`, etc.).
@@ -163,6 +163,28 @@ Luego:
 - Cambia el correo público en *Admin → Perfil* por `contacto@dylanmontoya.dev`.
 - Opcional: en Gmail → *Enviar como* puedes responder desde `contacto@` usando el SMTP de Resend.
 
+**WhatsApp (el mensaje te llega al teléfono sin que el visitante salga del sitio):**
+
+Opción A — CallMeBot (gratis, recomendado para notificaciones a tu propio número):
+
+1. Agrega a tus contactos el número del bot que indica <https://www.callmebot.com/blog/free-api-whatsapp-messages/>.
+2. Envíale por WhatsApp: `I allow callmebot to send me messages`. Te responde con tu API key.
+3. Guarda los secretos:
+
+   ```bash
+   pnpm wrangler secret put WHATSAPP_PHONE     # +50686861329 (tu número, no se muestra en el sitio)
+   pnpm wrangler secret put CALLMEBOT_APIKEY
+   ```
+
+Es un servicio de terceros: el texto del mensaje pasa por sus servidores.
+
+Opción B — WhatsApp Cloud API (oficial de Meta): crea una app en developers.facebook.com, un número emisor y una
+plantilla con un parámetro en el cuerpo (p. ej. «Nuevo mensaje del portafolio: {{1}}»). Luego configura
+`WHATSAPP_PROVIDER=meta` y los secretos `WHATSAPP_PHONE`, `META_WA_TOKEN`, `META_WA_PHONE_NUMBER_ID` y `META_WA_TEMPLATE`.
+Meta cobra por mensaje de plantilla según el país.
+
+Si WhatsApp no está configurado, el mensaje igual queda guardado en *Admin → Mensajes*.
+
 Sin Email Routing, deja `CONTACT_TO` con tu Gmail (configuración actual).
 Además, **cada mensaje se guarda en R2** y se ve en *Admin → Mensajes*, aunque falle el correo.
 
@@ -172,7 +194,7 @@ Además, **cada mensaje se guarda en R2** y se ve en *Admin → Mensajes*, aunqu
 
 Entra a `https://dylanmontoya.dev/admin`:
 
-- **Perfil:** nombre, titular, frase, fecha de nacimiento (eliges mostrar edad, fecha, ambas o nada; la edad se recalcula sola en cada visita), etiquetas, imagen opcional, contacto y texto «Sobre mí».
+- **Perfil:** nombre, titular, frase, fecha de nacimiento (eliges mostrar edad, fecha, ambas o nada; la edad se recalcula sola en cada visita), enfoque, correo, redes y texto «Sobre mí». Tu número de WhatsApp no está en el perfil: es un secreto del servidor.
 - **Experiencia / Educación / Proyectos:** crear, editar, eliminar. Fechas `AAAA` o `AAAA-MM`; sin fecha de fin = «Presente».
 - **Proyectos:** imagen de portada (botón *Subir imagen*), destacado en inicio, orden manual.
 - **Habilidades:** Markdown con grupos `## Grupo` y listas `- elemento`.

@@ -1,87 +1,38 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import CallToAction from '../components/CallToAction.astro';
-import Hero from '../components/Hero.astro';
-import Icon from '../components/Icon.astro';
+import Icon from '../components/UiIcon.astro';
 ---
 
 <BaseLayout title="Currículum" description="Currículum vitae en PDF.">
-	<div class="stack gap-20">
-		<main class="wrapper stack gap-10">
-			<Hero title="Currículum" tagline="Puedes verlo aquí mismo o descargarlo en PDF.">
-				<div class="actions">
-					<CallToAction href="/cv.pdf?descargar">
-						Descargar PDF
-						<Icon icon="download" size="1.2em" />
-					</CallToAction>
-					<a class="secondary-action" href="/cv.pdf" target="_blank" rel="noopener">
-						<Icon icon="external" size="1.1em" /> Abrir en otra pestaña
+	<section class="container-page pt-10 pb-8 sm:pt-16">
+		<div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+			<div>
+				<p class="eyebrow mb-2">Currículum</p>
+				<h1 class="text-4xl sm:text-5xl">CV</h1>
+				<p class="mt-3 text-lg text-gray-300">Versión actualizada en PDF.</p>
+			</div>
+			<div class="flex flex-wrap gap-3">
+				<a href="/cv.pdf" target="_blank" rel="noopener" class="btn btn-secondary">
+					<Icon name="external" size={16} /> Abrir en otra pestaña
+				</a>
+				<a href="/cv.pdf?descargar" download="Dylan_Montoya_CV.pdf" class="btn btn-primary">
+					<Icon name="download" size={16} /> Descargar PDF
+				</a>
+			</div>
+		</div>
+	</section>
+
+	<section class="container-page">
+		<div class="card overflow-hidden shadow-md">
+			<object data="/cv.pdf#view=FitH" type="application/pdf" class="block h-[80vh] min-h-[32rem] w-full" aria-label="Currículum en PDF">
+				<div class="flex flex-col items-center gap-4 p-10 text-center text-gray-300">
+					<Icon name="file" size={32} class="text-link" />
+					<p>Tu navegador no puede mostrar el PDF aquí.</p>
+					<a href="/cv.pdf?descargar" download="Dylan_Montoya_CV.pdf" class="btn btn-primary">
+						<Icon name="download" size={16} /> Descargar CV
 					</a>
 				</div>
-			</Hero>
-
-			<div class="viewer">
-				<object data="/cv.pdf#view=FitH" type="application/pdf" aria-label="Currículum en PDF">
-					<div class="fallback">
-						<Icon icon="file-text" size="2.5rem" gradient />
-						<p>Tu navegador no puede mostrar el PDF aquí.</p>
-						<CallToAction href="/cv.pdf?descargar">Descargar CV</CallToAction>
-					</div>
-				</object>
-			</div>
-		</main>
-	</div>
+			</object>
+		</div>
+	</section>
 </BaseLayout>
-
-<style>
-	.actions {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: 1rem;
-		margin-top: 1rem;
-	}
-
-	.secondary-action {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.6em;
-		padding: 0.56em 1.6em;
-		font-size: var(--text-lg);
-		line-height: 1.1;
-		color: var(--gray-200);
-		text-decoration: none;
-		border-radius: 999rem;
-		background: radial-gradient(var(--gray-900), var(--gray-800) 150%);
-		border: 1px solid var(--gray-800);
-		box-shadow: var(--shadow-md);
-	}
-
-	.viewer {
-		width: 100%;
-		max-width: 1000px;
-		margin-inline: auto;
-		overflow: hidden;
-		border: 1px solid var(--gray-800);
-		border-radius: 1.5rem;
-		background: var(--gray-999_40);
-		box-shadow: var(--shadow-md);
-	}
-
-	object {
-		display: block;
-		width: 100%;
-		height: 80vh;
-		min-height: 32rem;
-	}
-
-	.fallback {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 1rem;
-		padding: 3rem 1.5rem;
-		text-align: center;
-		color: var(--gray-300);
-	}
-</style>

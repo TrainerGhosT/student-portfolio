@@ -1,204 +1,57 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import CallToAction from '../../components/CallToAction.astro';
-import ContactCTA from '../../components/ContactCTA.astro';
-import Hero from '../../components/Hero.astro';
-import Icon from '../../components/Icon.astro';
 import TechPill from '../../components/TechPill.astro';
+import Icon from '../../components/UiIcon.astro';
 import { formatPeriod, getEntry, renderMarkdown } from '../../lib/content';
 
 const { slug = '' } = Astro.params;
-const entry = await getEntry('projects', slug);
-if (!entry) return Astro.rewrite('/404');
-const { data, body } = entry;
+const project = await getEntry('projects', slug);
+if (!project) return Astro.rewrite('/404');
+
+const { data, body } = project;
 ---
 
 <BaseLayout title={data.title} description={data.summary}>
-	<div class="stack gap-20">
-		<div class="stack gap-15">
-			<header>
-				<div class="wrapper stack gap-2">
-					<a class="back-link" href="/proyectos/"><Icon icon="arrow-left" /> Galería de Proyectos</a>
-					<Hero title={data.title} align="start">
-						<div class="details">
-							<div class="tags">
-								{data.tags?.map((t) => <TechPill name={t} variant="solid" />)}
-							</div>
-							<div class="stack gap-2 meta">
-								<p class="description">{data.summary}</p>
-								<p class="context">{[data.context, formatPeriod(data.date)].filter(Boolean).join(' · ')}</p>
-							</div>
-						</div>
-						{
-							(data.demo || data.repo) && (
-								<div class="links">
-									{data.demo && (
-										<CallToAction href={data.demo}>
-											Ver demo <Icon icon="external" size="1.1em" />
-										</CallToAction>
-									)}
-									{data.repo && (
-										<a class="secondary-action" href={data.repo} target="_blank" rel="noopener noreferrer">
-											<Icon icon="github-logo" size="1.2em" /> Código fuente
-										</a>
-									)}
-								</div>
-							)
-						}
-					</Hero>
-				</div>
-			</header>
-			<main class="wrapper">
-				<div class="stack gap-10 content">
-					{data.image && <img src={data.image} alt={data.imageAlt || ''} />}
-					<div class="content prose-portfolio" set:html={renderMarkdown(body)} />
-				</div>
-			</main>
-		</div>
-		<ContactCTA />
-	</div>
+	<article class="container-page max-w-4xl pt-8 sm:pt-12">
+		<a href="/proyectos" class="link inline-flex items-center gap-1.5 text-sm">
+			<Icon name="arrow-left" size={14} /> Proyectos
+		</a>
+
+		<header class="mt-6">
+			<p class="text-sm text-gray-400">{[data.context, formatPeriod(data.date)].filter(Boolean).join(' · ')}</p>
+			<h1 class="mt-2 text-4xl leading-tight sm:text-5xl">{data.title}</h1>
+			<p class="mt-4 text-lg text-gray-300">{data.summary}</p>
+
+			{
+				data.tags && data.tags.length > 0 && (
+					<div class="mt-5 flex flex-wrap gap-1.5" aria-label="Tecnologías">
+						{data.tags.map((t) => (
+							<TechPill name={t} />
+						))}
+					</div>
+				)
+			}
+
+			{
+				(data.repo || data.demo) && (
+					<div class="mt-7 flex flex-wrap gap-3">
+						{data.demo && (
+							<a href={data.demo} target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+								<Icon name="eye" size={16} /> Ver demo
+							</a>
+						)}
+						{data.repo && (
+							<a href={data.repo} target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+								<Icon name="github" size={16} /> Código fuente
+							</a>
+						)}
+					</div>
+				)
+			}
+		</header>
+
+		{data.image && <img src={data.image} alt={data.imageAlt ?? ''} class="mt-10 block w-full rounded-2xl border border-gray-800 shadow-md" />}
+
+		<div class="prose-portfolio mt-10 text-[1.05rem]" set:html={renderMarkdown(body)} />
+	</article>
 </BaseLayout>
-
-<style>
-	header {
-		padding-bottom: 2.5rem;
-		border-bottom: 1px solid var(--gray-800);
-	}
-
-	.back-link {
-		display: none;
-	}
-
-	.details {
-		display: flex;
-		flex-direction: column;
-		padding: 0.5rem;
-		gap: 1.5rem;
-		justify-content: space-between;
-		align-items: center;
-	}
-
-	.tags {
-		display: flex;
-		gap: 0.5rem;
-	}
-
-	.description {
-		font-size: var(--text-lg);
-		max-width: 54ch;
-	}
-
-	.content {
-		max-width: 65ch;
-		margin-inline: auto;
-	}
-
-	.content > :global(* + *) {
-		margin-top: 1rem;
-	}
-
-	.content :global(h1),
-	.content :global(h2),
-	.content :global(h3),
-	.content :global(h4),
-	.content :global(h5) {
-		margin: 1.5rem 0;
-	}
-
-	.content :global(img) {
-		border-radius: 1.5rem;
-		box-shadow: var(--shadow-sm);
-		background: var(--gradient-subtle);
-		border: 1px solid var(--gray-800);
-	}
-
-	.content :global(blockquote) {
-		font-size: var(--text-lg);
-		font-family: var(--font-brand);
-		font-weight: 600;
-		line-height: 1.1;
-		padding-inline-start: 1.5rem;
-		border-inline-start: 0.25rem solid var(--accent-dark);
-		color: var(--gray-0);
-	}
-
-	.back-link,
-	.content :global(a) {
-		text-decoration: 1px solid underline transparent;
-		text-underline-offset: 0.25em;
-		transition: text-decoration-color var(--theme-transition);
-	}
-
-	.back-link:hover,
-	.back-link:focus,
-	.content :global(a:hover),
-	.content :global(a:focus) {
-		text-decoration-color: currentColor;
-	}
-
-	@media (min-width: 50em) {
-		.back-link {
-			display: block;
-			align-self: flex-start;
-		}
-
-		.details {
-			flex-direction: row;
-			gap: 2.5rem;
-		}
-
-		.content :global(blockquote) {
-			font-size: var(--text-2xl);
-		}
-	}
-
-	.tags {
-		flex-wrap: wrap;
-		justify-content: center;
-	}
-
-	.meta {
-		align-items: center;
-		text-align: center;
-	}
-
-	.context {
-		font-size: var(--text-base);
-		color: var(--gray-400);
-	}
-
-	.links {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 1rem;
-		align-items: center;
-		margin-top: 0.5rem;
-	}
-
-	.secondary-action {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.6em;
-		padding: 0.56em 1.6em;
-		font-size: var(--text-lg);
-		line-height: 1.1;
-		color: var(--gray-200);
-		text-decoration: none;
-		border-radius: 999rem;
-		background: radial-gradient(var(--gray-900), var(--gray-800) 150%);
-		border: 1px solid var(--gray-800);
-		box-shadow: var(--shadow-md);
-	}
-
-	@media (min-width: 50em) {
-		.tags {
-			justify-content: flex-start;
-			max-width: 24rem;
-		}
-
-		.meta {
-			align-items: flex-start;
-			text-align: start;
-		}
-	}
-</style>

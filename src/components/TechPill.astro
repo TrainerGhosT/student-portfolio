@@ -1,42 +1,11 @@
 ---
+import { SHOW_TECH_LOGOS } from '../lib/tech';
 import TechIcon from './TechIcon.astro';
 
 interface Props {
 	name: string;
-	variant?: 'solid' | 'soft';
 }
-const { name, variant = 'soft' } = Astro.props;
+const { name } = Astro.props;
 ---
 
-<span class:list={['tech-pill', variant]}><TechIcon name={name} size="1.05em" />{name}</span>
-
-<style>
-	.tech-pill {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.45rem;
-		padding: 0.35rem 0.85rem;
-		border-radius: 999rem;
-		font-size: var(--text-sm);
-		line-height: 1.3;
-		white-space: nowrap;
-	}
-
-	.soft {
-		color: var(--gray-200);
-		background: radial-gradient(var(--gray-900), var(--gray-800) 150%);
-		border: 1px solid var(--gray-800);
-		box-shadow: var(--shadow-sm);
-	}
-
-	.solid {
-		color: var(--accent-text-over);
-		background-color: var(--accent-regular);
-		border: 1px solid var(--accent-regular);
-	}
-
-	/* Sobre fondo morado los logos de marca se ven en blanco para mantener contraste. */
-	.solid :global(svg) {
-		fill: currentColor;
-	}
-</style>
+<span class="chip">{SHOW_TECH_LOGOS && <TechIcon name={name} size="1.05em" />}{name}</span>
