@@ -1,0 +1,58 @@
+---
+import { formatPeriod, type Doc, type Project } from '../lib/content';
+import Icon from './Icon.astro';
+
+interface Props {
+	project: Doc<Project>;
+}
+const { slug, data } = Astro.props.project;
+const initials = data.title
+	.split(/\s+/)
+	.filter((w) => w.length > 2)
+	.slice(0, 2)
+	.map((w) => w[0]!.toUpperCase())
+	.join('');
+---
+
+<article class="card group relative flex h-full flex-col overflow-hidden transition-shadow hover:shadow-md dark:hover:border-zinc-700">
+	<div class="aspect-[16/9] overflow-hidden border-b border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-800/50">
+		{
+			data.image ? (
+				<img
+					src={data.image}
+					alt={data.imageAlt ?? ''}
+					loading="lazy"
+					decoding="async"
+					class="size-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.02]"
+				/>
+			) : (
+				<div class="flex size-full items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900">
+					<span class="text-4xl font-semibold tracking-tight text-zinc-400 dark:text-zinc-600">{initials}</span>
+				</div>
+			)
+		}
+	</div>
+	<div class="flex flex-1 flex-col p-5">
+		<p class="text-xs text-zinc-500 dark:text-zinc-400">
+			{data.context ? `${data.context} · ` : ''}{formatPeriod(data.date)}
+		</p>
+		<h3 class="mt-1.5 text-base">
+			<a href={`/proyectos/${slug}`} class="after:absolute after:inset-0">
+				{data.title}
+			</a>
+		</h3>
+		<p class="mt-2 line-clamp-3 text-sm text-zinc-600 dark:text-zinc-400">{data.summary}</p>
+		{
+			data.tags && data.tags.length > 0 && (
+				<ul class="mt-4 flex flex-wrap gap-1.5" aria-label="Tecnologías">
+					{data.tags.slice(0, 5).map((t) => (
+						<li class="chip">{t}</li>
+					))}
+				</ul>
+			)
+		}
+		<span class="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-medium text-brand-700 dark:text-brand-400">
+			Ver detalle <Icon name="arrow-right" size={14} class="transition-transform group-hover:translate-x-0.5" />
+		</span>
+	</div>
+</article>

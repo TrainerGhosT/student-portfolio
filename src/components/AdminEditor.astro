@@ -1,0 +1,162 @@
+---
+import type { CollectionDef, CollectionName } from '../lib/schema';
+import Icon from './Icon.astro';
+
+interface Props {
+	collection: CollectionName;
+	def: CollectionDef;
+	slug?: string;
+	data: Record<string, any>;
+	body: string;
+	isNew?: boolean;
+}
+const { collection, def, slug = '', data, body, isNew = false } = Astro.props;
+
+const valueOf = (name: string, type: string) => {
+	const v = data[name];
+	if (v === undefined || v === null) return '';
+	if (type === 'tags' && Array.isArray(v)) return v.join(', ');
+	return String(v);
+};
+---
+
+<form method="post" action="/api/admin/entry" class="space-y-6" data-editor>
+	<input type="hidden" name="_collection" value={collection} />
+	<input type="hidden" name="_slug" value={isNew ? '' : slug} />
+
+	{
+		def.kind === 'list' && (
+			<div class="card p-5">
+				<label class="field-label" for="f-slug">Identificador en la URL (slug)</label>
+				<input id="f-slug" name="slug" value={slug} class="field font-mono" placeholder="se-genera-del-titulo" pattern="[a-z0-9]+(-[a-z0-9]+)*" />
+				<p class="mt-1.5 text-xs text-zinc-500">Solo minúsculas, números y guiones. Si lo dejas vacío se genera del título.</p>
+			</div>
+		)
+	}
+
+	{
+		def.fields.length > 0 && (
+			<div class="card grid gap-5 p-5 sm:grid-cols-2">
+				{def.fields.map((f) => {
+					const id = `f-${f.name}`;
+					const value = valueOf(f.name, f.type);
+					const wide = f.type === 'textarea' || f.type === 'image' || f.type === 'tags';
+					return (
+						<div class:list={[wide && 'sm:col-span-2']}>
+							{f.type === 'boolean' ? (
+								<label class="flex items-center gap-2 text-sm font-medium text-zinc-800 dark:text-zinc-200">
+									<input type="checkbox" name={f.name} checked={!!data[f.name]} class="size-4 rounded accent-brand-600" />
+									{f.label}
+								</label>
+							) : (
+								<>
+									<label for={id} class="field-label">
+										{f.label} {f.required && <span class="text-red-600">*</span>}
+									</label>
+									{f.type === 'textarea' ? (
+										<textarea id={id} name={f.name} rows="3" class="field" required={f.required}>{value}</textarea>
+									) : f.type === 'select' ? (
+										<select id={id} name={f.name} class="field" required={f.required}>
+											{f.options?.map((o) => (
+												<option value={o.value} selected={value === o.value}>{o.label}</option>
+											))}
+										</select>
+									) : f.type === 'image' ? (
+										<div class="flex flex-col gap-2 sm:flex-row" data-image-field>
+											<input id={id} name={f.name} value={value} class="field font-mono" placeholder="/media/… o https://…" />
+											<label class="btn btn-secondary shrink-0 cursor-pointer">
+												<Icon name="upload" size={16} /> Subir imagen
+												<input type="file" accept="image/*" class="sr-only" data-upload-for={id} />
+											</label>
+										</div>
+									) : (
+										<input
+											id={id}
+											name={f.name}
+											value={value}
+											class="field"
+											required={f.required}
+											placeholder={f.placeholder}
+											type={f.type === 'url' ? 'url' : f.type === 'email' ? 'email' : f.type === 'number' ? 'number' : 'text'}
+										/>
+									)}
+									{f.help && <p class="mt-1.5 text-xs text-zinc-500">{f.help}</p>}
+								</>
+							)}
+						</div>
+					);
+				})}
+			</div>
+		)
+	}
+
+	<div class="card p-5">
+		<div class="mb-2 flex items-center justify-between gap-2">
+			<label for="f-body" class="field-label !mb-0">{def.bodyLabel}</label>
+			<div class="flex rounded-lg border border-zinc-200 p-0.5 text-xs dark:border-zinc-700" role="tablist">
+				<button type="button" class="rounded-md px-2.5 py-1 aria-selected:bg-zinc-100 dark:aria-selected:bg-zinc-800" aria-selected="true" data-tab="write">Escribir</button>
+				<button type="button" class="rounded-md px-2.5 py-1 aria-selected:bg-zinc-100 dark:aria-selected:bg-zinc-800" aria-selected="false" data-tab="preview">Vista previa</button>
+			</div>
+		</div>
+		<textarea id="f-body" name="body" rows="14" class="field font-mono text-[0.8rem] leading-relaxed" data-body>{body}</textarea>
+		<div class="prose prose-zinc prose-sm dark:prose-invert hidden min-h-40 max-w-none rounded-lg border border-zinc-200 p-4 dark:border-zinc-700" data-preview></div>
+		{def.bodyHelp && <p class="mt-1.5 text-xs text-zinc-500">{def.bodyHelp}</p>}
+	</div>
+
+	<div class="flex flex-wrap items-center justify-between gap-3">
+		<button type="submit" class="btn btn-primary"><Icon name="check" size={16} /> Guardar cambios</button>
+		<span class="text-xs text-zinc-500">Los cambios se publican al instante (pueden tardar hasta 1 minuto en todas las regiones).</span>
+	</div>
+</form>
+
+{
+	def.kind === 'list' && !isNew && (
+		<form method="post" action="/api/admin/entry" class="mt-10 border-t border-zinc-200 pt-6 dark:border-zinc-800" data-delete>
+			<input type="hidden" name="_collection" value={collection} />
+			<input type="hidden" name="_slug" value={slug} />
+			<input type="hidden" name="_action" value="delete" />
+			<button type="submit" class="btn btn-danger"><Icon name="trash" size={16} /> Eliminar</button>
+		</form>
+	)
+}
+
+<script>
+	// Pestañas Escribir / Vista previa
+	const body = document.querySelector<HTMLTextAreaElement>('[data-body]')!;
+	const preview = document.querySelector<HTMLElement>('[data-preview]')!;
+	document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((tab) =>
+		tab.addEventListener('click', async () => {
+			const showPreview = tab.dataset.tab === 'preview';
+			document.querySelectorAll('[data-tab]').forEach((t) => t.setAttribute('aria-selected', String(t === tab)));
+			body.classList.toggle('hidden', showPreview);
+			preview.classList.toggle('hidden', !showPreview);
+			if (showPreview) {
+				preview.innerHTML = '<p class="text-zinc-400">Cargando…</p>';
+				const res = await fetch('/api/admin/preview', { method: 'POST', body: body.value });
+				preview.innerHTML = await res.text();
+			}
+		}),
+	);
+
+	// Subida de imágenes a R2
+	document.querySelectorAll<HTMLInputElement>('[data-upload-for]').forEach((input) =>
+		input.addEventListener('change', async () => {
+			const file = input.files?.[0];
+			if (!file) return;
+			const target = document.getElementById(input.dataset.uploadFor!) as HTMLInputElement;
+			const fd = new FormData();
+			fd.append('kind', 'image');
+			fd.append('file', file);
+			target.value = 'Subiendo…';
+			const res = await fetch('/api/admin/upload', { method: 'POST', body: fd, headers: { Accept: 'application/json' } });
+			const data = (await res.json()) as { ok: boolean; url?: string; message?: string };
+			target.value = data.ok ? data.url! : '';
+			if (!data.ok) alert(data.message);
+		}),
+	);
+
+	// Confirmación antes de eliminar
+	document.querySelector('[data-delete]')?.addEventListener('submit', (e) => {
+		if (!confirm('¿Eliminar este elemento? No se puede deshacer.')) e.preventDefault();
+	});
+</script>

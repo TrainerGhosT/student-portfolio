@@ -1,228 +1,178 @@
 ---
-import { getCollection } from "astro:content";
+import BaseLayout from '../layouts/BaseLayout.astro';
+import EducationList from '../components/EducationList.astro';
+import ExperienceTimeline from '../components/ExperienceTimeline.astro';
+import Icon from '../components/Icon.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import Section from '../components/Section.astro';
+import SkillGroups from '../components/SkillGroups.astro';
+import { getEntries, getSingle, parseSkillGroups, renderMarkdown } from '../lib/content';
 
-// Layout import — provides basic page elements: <head>, <nav>, <footer> etc.
-import BaseLayout from "../layouts/BaseLayout.astro";
+const [profileDoc, skillsDoc, experience, education, projects] = await Promise.all([
+	getSingle('profile'),
+	getSingle('skills'),
+	getEntries('experience'),
+	getEntries('education'),
+	getEntries('projects'),
+]);
 
-// Component Imports
-import CallToAction from "../components/CallToAction.astro";
-import Grid from "../components/Grid.astro";
-import Hero from "../components/Hero.astro";
-import Icon from "../components/Icon.astro";
-import Pill from "../components/Pill.astro";
-import PortfolioPreview from "../components/PortfolioPreview.astro";
-
-// Page section components
-import ContactCTA from "../components/ContactCTA.astro";
-import Skills from "../components/Skills.astro";
-
-// Content Fetching: List four most recent work projects
-const projects = (await getCollection("work"))
-  .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf())
-  .slice(0, 4);
-
-// Full Astro Component Syntax:
-// https://docs.astro.build/basics/astro-components/
+const profile = profileDoc!.data;
+const current = experience.find((e) => !e.data.end);
+const featured = (projects.filter((p) => p.data.featured).length ? projects.filter((p) => p.data.featured) : projects).slice(0, 4);
+const skills = parseSkillGroups(skillsDoc?.body ?? '');
 ---
 
 <BaseLayout>
-  <div class="stack gap-20 lg:gap-48">
-    <div class="wrapper stack gap-8 lg:gap-20">
-      <header class="hero">
-        <Hero
-         title="Hola, mi nombre es Dylan Montoya"
-          tagline="Soy un Estudiante de TI apasionado por la Tecnología, la Construcción de Soluciones y el Aprendizaje Continuo"
-          align="start"
-        >
-          <div class="roles">
-            <Pill><Icon icon="code" size="1.33em" /> Developer</Pill>
-            <Pill><Icon icon="pencil-line" size="1.33em" /> Student</Pill>
-          </div>
-          <div class="personal-info">
-            <div class="info-item">
-              <Icon icon="calendar" size="1.33em" gradient />
-              <span>Fecha de nacimiento: 16 de Diciembre, 2001</span>
-            </div>
-            <div class="info-item">
-              <Icon icon="map-pin" size="1.33em" gradient />
-              <span>Cartago, Costa Rica</span>
-            </div>
-          </div>
-        </Hero>
+	<!-- Hero -->
+	<section class="container-page pt-16 pb-14 sm:pt-24 sm:pb-20">
+		<div class="grid items-start gap-12 lg:grid-cols-[1fr_20rem]">
+			<div>
+				{
+					profile.availability && (
+						<p class="mb-6 inline-flex items-center gap-2 rounded-full border border-zinc-200 px-3 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
+							<span class="size-1.5 rounded-full bg-brand-500" aria-hidden="true" />
+							{profile.availability}
+						</p>
+					)
+				}
+				<h1 class="text-4xl leading-[1.1] sm:text-5xl">{profile.name}</h1>
+				<p class="mt-3 text-lg font-medium text-brand-700 sm:text-xl dark:text-brand-400">{profile.headline}</p>
+				<p class="mt-6 max-w-2xl text-lg leading-relaxed text-zinc-600 dark:text-zinc-400">{profile.tagline}</p>
 
-        <img
-          alt="Avatar Portofolio Personal"
-          width="480"
-          height="620"
-          src="/assets/avatar-lambda.jpg"
-        />
-      </header>
+				<div class="mt-8 flex flex-wrap gap-3">
+					<a href="/contacto" class="btn btn-primary"><Icon name="mail" size={16} /> Contactarme</a>
+					<a href="/cv" class="btn btn-secondary"><Icon name="file" size={16} /> Ver CV</a>
+					<a href="/cv.pdf?descargar" class="btn btn-secondary" download="Dylan_Montoya_CV.pdf">
+						<Icon name="download" size={16} /> Descargar
+					</a>
+				</div>
+			</div>
 
-	  
-      
-    </div>
+			<aside class="card p-5 text-sm" aria-label="Resumen">
+				<dl class="space-y-4">
+					{
+						current && (
+							<div>
+								<dt class="text-xs text-zinc-500 dark:text-zinc-400">Actualmente</dt>
+								<dd class="mt-0.5 font-medium text-zinc-900 dark:text-zinc-100">{current.data.role}</dd>
+							</div>
+						)
+					}
+					{
+						profile.location && (
+							<div>
+								<dt class="text-xs text-zinc-500 dark:text-zinc-400">Ubicación</dt>
+								<dd class="mt-0.5 flex items-center gap-1.5 font-medium text-zinc-900 dark:text-zinc-100">
+									<Icon name="map-pin" size={14} class="text-zinc-400" />
+									{profile.location}
+								</dd>
+							</div>
+						)
+					}
+					{
+						profile.focus && profile.focus.length > 0 && (
+							<div>
+								<dt class="text-xs text-zinc-500 dark:text-zinc-400">Enfoque</dt>
+								<dd class="mt-1.5 flex flex-wrap gap-1.5">
+									{profile.focus.map((f) => (
+										<span class="chip">{f}</span>
+									))}
+								</dd>
+							</div>
+						)
+					}
+				</dl>
+				<div class="mt-5 flex gap-1 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+					{
+						profile.linkedin && (
+							<a href={profile.linkedin} target="_blank" rel="noopener noreferrer" class="btn btn-secondary flex-1 !px-2 !py-2">
+								<Icon name="linkedin" size={16} /> LinkedIn
+							</a>
+						)
+					}
+					{
+						profile.github && (
+							<a href={profile.github} target="_blank" rel="noopener noreferrer" class="btn btn-secondary flex-1 !px-2 !py-2">
+								<Icon name="github" size={16} /> GitHub
+							</a>
+						)
+					}
+				</div>
+			</aside>
+		</div>
+	</section>
 
+	<div class="border-t border-zinc-200 dark:border-zinc-800"></div>
+
+	<!-- Sobre mí -->
+	<Section id="sobre-mi" eyebrow="Sobre mí" title="Software útil, procesos más simples">
+		<div
+			class="prose prose-zinc dark:prose-invert prose-p:leading-relaxed max-w-3xl text-[1.05rem]"
+			set:html={renderMarkdown(profileDoc!.body)}
+		/>
+	</Section>
+
+	<!-- Experiencia -->
+	{
+		experience.length > 0 && (
+			<Section id="experiencia" eyebrow="Trayectoria" title="Experiencia" class="border-t border-zinc-200 dark:border-zinc-800">
+				<ExperienceTimeline items={experience} />
+			</Section>
+		)
+	}
+
+	<!-- Proyectos -->
+	{
+		featured.length > 0 && (
+			<Section
+				id="proyectos"
+				eyebrow="Trabajo seleccionado"
+				title="Proyectos"
+				description="Una selección de proyectos académicos y personales."
+				class="border-t border-zinc-200 dark:border-zinc-800"
+			>
+				<a slot="action" href="/proyectos" class="link inline-flex shrink-0 items-center gap-1 text-sm">
+					Ver todos <Icon name="arrow-right" size={14} />
+				</a>
+				<ul class="grid gap-5 sm:grid-cols-2">
+					{featured.map((p) => (
+						<li>
+							<ProjectCard project={p} />
+						</li>
+					))}
+				</ul>
+			</Section>
+		)
+	}
+
+	<!-- Educación -->
+	{
+		education.length > 0 && (
+			<Section id="educacion" eyebrow="Formación" title="Educación y certificaciones" class="border-t border-zinc-200 dark:border-zinc-800">
+				<EducationList items={education} />
+			</Section>
+		)
+	}
+
+	<!-- Habilidades -->
+	{
+		skills.length > 0 && (
+			<Section id="habilidades" eyebrow="Herramientas" title="Habilidades" class="border-t border-zinc-200 dark:border-zinc-800">
+				<SkillGroups groups={skills} />
+			</Section>
+		)
+	}
+
+	<!-- Contacto -->
+	<section class="container-page">
+		<div class="card flex flex-col items-start gap-6 p-8 sm:flex-row sm:items-center sm:justify-between sm:p-10">
+			<div>
+				<h2 class="text-2xl">¿Conversamos?</h2>
+				<p class="mt-2 max-w-xl text-zinc-600 dark:text-zinc-400">
+					Si tienes una oportunidad, un proyecto o una idea en la que pueda aportar, escríbeme.
+				</p>
+			</div>
+			<a href="/contacto" class="btn btn-primary shrink-0">Ir a contacto <Icon name="arrow-right" size={16} /></a>
+		</div>
+	</section>
 </BaseLayout>
-
-<style>
-
-	
-  .hero {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2rem;
-  }
-
-  .roles {
-    display: none;
-  }
-  .personal-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 1rem;
-  }
-
-  .info-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--gray-300);
-  }
-
-  .hero img {
-    aspect-ratio: 5 / 4;
-    object-fit: cover;
-    object-position: top;
-    border-radius: 1.5rem;
-    box-shadow: var(--shadow-md);
-  }
-
-  @media (min-width: 50em) {
-    .hero {
-      display: grid;
-      grid-template-columns: 6fr 4fr;
-      padding-inline: 2.5rem;
-      gap: 3.75rem;
-    }
-
-    .roles {
-      margin-top: 0.5rem;
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .hero img {
-      aspect-ratio: 3 / 4;
-      border-radius: 4.5rem;
-      object-fit: cover;
-    }
-    .personal-info {
-      margin-top: 1.5rem;
-    }
-  }
-
-  /* ====================================================== */
-
-  .section {
-    display: grid;
-    gap: 2rem;
-  }
-
-  .with-background {
-    position: relative;
-  }
-
-  .with-background::before {
-    --hero-bg: var(--bg-image-subtle-2);
-
-    content: "";
-    position: absolute;
-    pointer-events: none;
-    left: 50%;
-    width: 100vw;
-    aspect-ratio: calc(2.25 / var(--bg-scale));
-    top: 0;
-    transform: translateY(-75%) translateX(-50%);
-    background:
-      url("/assets/backgrounds/noise.png") top center/220px repeat,
-      var(--hero-bg) center center / var(--bg-gradient-size) no-repeat,
-      var(--gray-999);
-    background-blend-mode: overlay, normal, normal, normal;
-    mix-blend-mode: var(--bg-blend-mode);
-    z-index: -1;
-  }
-
-  .with-background.bg-variant::before {
-    --hero-bg: var(--bg-image-subtle-1);
-  }
-
-  .section-header {
-    justify-self: center;
-    text-align: center;
-    max-width: 50ch;
-    font-size: var(--text-md);
-    color: var(--gray-300);
-  }
-
-  .section-header h3 {
-    font-size: var(--text-2xl);
-  }
-
-  @media (min-width: 50em) {
-    .section {
-      grid-template-columns: repeat(4, 1fr);
-      grid-template-areas: "header header header header" "gallery gallery gallery gallery";
-      gap: 5rem;
-    }
-
-    .section.with-cta {
-      grid-template-areas: "header header header cta" "gallery gallery gallery gallery";
-    }
-
-    .section-header {
-      grid-area: header;
-      font-size: var(--text-lg);
-    }
-
-    .section-header h3 {
-      font-size: var(--text-4xl);
-    }
-
-    .with-cta .section-header {
-      justify-self: flex-start;
-      text-align: left;
-    }
-
-    .gallery {
-      grid-area: gallery;
-    }
-
-    .cta {
-      grid-area: cta;
-    }
-  }
-
-  /* ====================================================== */
-
-  .mention-card {
-    display: flex;
-    height: 7rem;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    border: 1px solid var(--gray-800);
-    border-radius: 1.5rem;
-    color: var(--gray-300);
-    background: var(--gradient-subtle);
-    box-shadow: var(--shadow-sm);
-  }
-
-  @media (min-width: 50em) {
-    .mention-card {
-      border-radius: 1.5rem;
-      height: 9.5rem;
-    }
-  }
-</style>

@@ -1,0 +1,48 @@
+---
+import { formatRange, renderMarkdown, type Doc, type Experience } from '../lib/content';
+
+interface Props {
+	items: Doc<Experience>[];
+}
+const { items } = Astro.props;
+---
+
+<ol class="relative space-y-10 border-l border-zinc-200 pl-6 sm:pl-8 dark:border-zinc-800">
+	{
+		items.map(({ data, body }) => (
+			<li class="relative">
+				<span
+					class:list={[
+						'absolute top-1.5 -left-[1.95rem] size-3 rounded-full ring-4 ring-white sm:-left-[2.45rem] dark:ring-zinc-950',
+						data.end ? 'bg-zinc-300 dark:bg-zinc-600' : 'bg-brand-500',
+					]}
+					aria-hidden="true"
+				/>
+				<div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+					<h3 class="text-lg">{data.role}</h3>
+					<p class="shrink-0 text-sm text-zinc-500 tabular-nums dark:text-zinc-400">
+						{formatRange(data.start, data.end)}
+					</p>
+				</div>
+				<p class="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+					<span class="font-medium text-zinc-800 dark:text-zinc-200">{data.company}</span>
+					{data.employmentType && <span> · {data.employmentType}</span>}
+					{data.location && <span> · {data.location}</span>}
+				</p>
+				{body && (
+					<div
+						class="prose prose-zinc prose-sm dark:prose-invert prose-li:my-1 prose-strong:text-zinc-900 dark:prose-strong:text-zinc-100 mt-4 max-w-none"
+						set:html={renderMarkdown(body)}
+					/>
+				)}
+				{data.stack && data.stack.length > 0 && (
+					<ul class="mt-4 flex flex-wrap gap-1.5" aria-label="Tecnologías">
+						{data.stack.map((t) => (
+							<li class="chip">{t}</li>
+						))}
+					</ul>
+				)}
+			</li>
+		))
+	}
+</ol>

@@ -1,0 +1,55 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import Icon from '../../components/Icon.astro';
+import { bucket, CV_KEY } from '../../lib/content';
+
+const [cv, media] = await Promise.all([
+	bucket().head(CV_KEY).catch(() => null),
+	bucket().list({ prefix: 'media/', limit: 200 }).catch(() => null),
+]);
+const images = (media?.objects ?? []).sort((a, b) => b.uploaded.getTime() - a.uploaded.getTime());
+---
+
+<AdminLayout title="Archivos y CV">
+	<h1 class="text-2xl">Archivos y CV</h1>
+
+	<section class="card mt-6 p-5">
+		<h2 class="text-base">Currículum (PDF)</h2>
+		<p class="mt-1 text-sm text-zinc-500">
+			{
+				cv
+					? `Actual: ${cv.customMetadata?.originalName ?? 'cv.pdf'} · subido el ${cv.uploaded.toLocaleString('es-CR')}`
+					: 'Todavía no has subido un CV: el sitio usa el PDF incluido en el proyecto.'
+			}
+		</p>
+		<form method="post" action="/api/admin/upload" enctype="multipart/form-data" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+			<input type="hidden" name="kind" value="cv" />
+			<input type="file" name="file" accept="application/pdf" required class="field file:mr-3 file:rounded-md file:border-0 file:bg-zinc-100 file:px-3 file:py-1 file:text-sm dark:file:bg-zinc-800 dark:file:text-zinc-200" />
+			<button class="btn btn-primary shrink-0"><Icon name="upload" size={16} /> Reemplazar CV</button>
+		</form>
+		<a href="/cv" target="_blank" class="link mt-3 inline-flex items-center gap-1 text-sm">Ver página del CV <Icon name="external" size={13} /></a>
+	</section>
+
+	<section class="card mt-6 p-5">
+		<h2 class="text-base">Imágenes</h2>
+		<p class="mt-1 text-sm text-zinc-500">Súbelas aquí o desde el editor de un proyecto. Copia la ruta para usarla en Markdown: <code>![texto](/media/…)</code></p>
+		<form method="post" action="/api/admin/upload" enctype="multipart/form-data" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+			<input type="hidden" name="kind" value="image" />
+			<input type="file" name="file" accept="image/*" required class="field file:mr-3 file:rounded-md file:border-0 file:bg-zinc-100 file:px-3 file:py-1 file:text-sm dark:file:bg-zinc-800 dark:file:text-zinc-200" />
+			<button class="btn btn-secondary shrink-0"><Icon name="upload" size={16} /> Subir imagen</button>
+		</form>
+
+		{
+			images.length > 0 && (
+				<ul class="mt-6 grid gap-4 sm:grid-cols-3">
+					{images.map((img) => (
+						<li class="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
+							<img src={`/${img.key}`} alt="" loading="lazy" class="aspect-video w-full bg-zinc-100 object-cover dark:bg-zinc-800" />
+							<input readonly value={`/${img.key}`} class="w-full border-0 border-t border-zinc-200 bg-transparent px-2 py-1.5 font-mono text-xs dark:border-zinc-800" onclick="this.select()" />
+						</li>
+					))}
+				</ul>
+			)
+		}
+	</section>
+</AdminLayout>

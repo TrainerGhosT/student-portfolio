@@ -1,20 +1,43 @@
 {
-  "name": "student-portfolio",
+  "name": "dylan-montoya-portfolio",
   "type": "module",
-  "version": "0.0.1",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
+    "dev": "wrangler types && astro dev",
+    "build": "wrangler types && astro check && astro build",
+    "preview": "astro build && astro preview",
+    "deploy": "astro build && wrangler deploy",
+    "cf-typegen": "wrangler types",
     "astro": "astro"
   },
-  "dependencies": {
-    "astro": "^5.2.5"
-  },
   "pnpm": {
-    "ignoredBuiltDependencies": [
+    "onlyBuiltDependencies": [
       "esbuild",
-      "sharp"
+      "sharp",
+      "workerd"
     ]
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^14.4.0",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@tailwindcss/typography": "^0.5.20",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.4.0",
+    "jose": "^6.2.12",
+    "lucide-static": "^1.59.0",
+    "marked": "^18.1.1",
+    "simple-icons": "^16.35.0",
+    "tailwindcss": "^4.3.3",
+    "uqr": "^0.1.3",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "typescript": "^6.0.3",
+    "wrangler": "^4.151.1"
   }
 }

@@ -1,0 +1,33 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "dylan-portfolio",
+  "main": "@astrojs/cloudflare/entrypoints/server",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+
+  // Bucket R2 con el contenido (markdown), imágenes, CV y mensajes de contacto.
+  "r2_buckets": [
+    { "binding": "CONTENT", "bucket_name": "portfolio-content" }
+  ],
+
+  // Límite de envíos del formulario de contacto: 3 por minuto por IP.
+  "ratelimits": [
+    { "name": "CONTACT_LIMITER", "namespace_id": "1001", "simple": { "limit": 3, "period": 60 } }
+  ],
+
+  // Variables públicas (no secretas). Los secretos van con `wrangler secret put`.
+  "vars": {
+    "ADMIN_EMAIL": "dylanmont15@gmail.com",
+    "ACCESS_TEAM_DOMAIN": "https://TU-EQUIPO.cloudflareaccess.com",
+    "ACCESS_AUD": "",
+    "CONTACT_FROM": "Portafolio <contacto@dylanmontoya.dev>",
+    "CONTACT_TO": "dylanmont15@gmail.com",
+    "CONTACT_CC": "",
+    "TURNSTILE_SITE_KEY": "1x00000000000000000000AA"
+  }
+
+  // Dominio propio (descomentar cuando el dominio esté en Cloudflare):
+  // "routes": [{ "pattern": "dylanmontoya.dev", "custom_domain": true }],
+  // "workers_dev": false
+}

@@ -1,0 +1,69 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+import { formatPeriod, getEntry, renderMarkdown } from '../../lib/content';
+
+const { slug = '' } = Astro.params;
+const project = await getEntry('projects', slug);
+if (!project) return Astro.rewrite('/404');
+
+const { data, body } = project;
+---
+
+<BaseLayout title={data.title} description={data.summary}>
+	<article class="container-page max-w-3xl pt-10 sm:pt-14">
+		<a href="/proyectos" class="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100">
+			<Icon name="arrow-left" size={14} /> Proyectos
+		</a>
+
+		<header class="mt-6">
+			<p class="text-sm text-zinc-500 dark:text-zinc-400">
+				{data.context ? `${data.context} · ` : ''}{formatPeriod(data.date)}
+			</p>
+			<h1 class="mt-2 text-3xl sm:text-4xl">{data.title}</h1>
+			<p class="mt-4 text-lg text-zinc-600 dark:text-zinc-400">{data.summary}</p>
+
+			{
+				data.tags && data.tags.length > 0 && (
+					<ul class="mt-5 flex flex-wrap gap-1.5" aria-label="Tecnologías">
+						{data.tags.map((t) => (
+							<li class="chip">{t}</li>
+						))}
+					</ul>
+				)
+			}
+
+			{
+				(data.repo || data.demo) && (
+					<div class="mt-6 flex flex-wrap gap-3">
+						{data.demo && (
+							<a href={data.demo} target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+								<Icon name="eye" size={16} /> Ver demo
+							</a>
+						)}
+						{data.repo && (
+							<a href={data.repo} target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+								<Icon name="github" size={16} /> Código fuente
+							</a>
+						)}
+					</div>
+				)
+			}
+		</header>
+
+		{
+			data.image && (
+				<img
+					src={data.image}
+					alt={data.imageAlt ?? ''}
+					class="mt-10 w-full rounded-xl border border-zinc-200 dark:border-zinc-800"
+				/>
+			)
+		}
+
+		<div
+			class="prose prose-zinc dark:prose-invert prose-headings:scroll-mt-24 prose-a:text-brand-700 dark:prose-a:text-brand-400 mt-10 max-w-none"
+			set:html={renderMarkdown(body)}
+		/>
+	</article>
+</BaseLayout>

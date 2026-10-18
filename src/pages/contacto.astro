@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ContactChannels from '../components/ContactChannels.astro';
+import ContactForm from '../components/ContactForm.astro';
+import { getSingle } from '../lib/content';
+
+const profile = (await getSingle('profile'))!.data;
+---
+
+<BaseLayout title="Contacto" description={`Formas de contactar a ${profile.name}: correo, WhatsApp o formulario.`}>
+	<section class="container-page pt-14 pb-6 sm:pt-20">
+		<p class="eyebrow mb-2">Contacto</p>
+		<h1 class="text-3xl sm:text-4xl">Hablemos</h1>
+		<p class="mt-3 max-w-2xl text-zinc-600 dark:text-zinc-400">
+			Escríbeme por el medio que prefieras. Para propuestas o temas más detallados, el formulario es la mejor opción.
+		</p>
+	</section>
+
+	<section class="container-page grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+		<ContactChannels profile={profile} />
+		<ContactForm />
+	</section>
+</BaseLayout>

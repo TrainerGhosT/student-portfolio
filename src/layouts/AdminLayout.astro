@@ -1,0 +1,90 @@
+---
+import '../styles/global.css';
+import Icon, { type IconName } from '../components/Icon.astro';
+import Monogram from '../components/Monogram.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
+
+interface Props {
+	title: string;
+}
+const { title } = Astro.props;
+const path = Astro.url.pathname.replace(/\/$/, '');
+const ok = Astro.url.searchParams.get('ok');
+const error = Astro.url.searchParams.get('error');
+
+const nav: { label: string; href: string; icon: IconName }[] = [
+	{ label: 'Resumen', href: '/admin', icon: 'layers' },
+	{ label: 'Perfil', href: '/admin/profile', icon: 'user' },
+	{ label: 'Experiencia', href: '/admin/experience', icon: 'briefcase' },
+	{ label: 'Proyectos', href: '/admin/projects', icon: 'folder' },
+	{ label: 'Educación', href: '/admin/education', icon: 'graduation' },
+	{ label: 'Habilidades', href: '/admin/skills', icon: 'code' },
+	{ label: 'Archivos y CV', href: '/admin/archivos', icon: 'upload' },
+	{ label: 'Mensajes', href: '/admin/mensajes', icon: 'inbox' },
+];
+const active = (href: string) => (href === '/admin' ? path === '/admin' : path.startsWith(href));
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="robots" content="noindex, nofollow" />
+		<title>{title} · Admin</title>
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<script is:inline>
+			try {
+				const t = localStorage.getItem('theme');
+				document.documentElement.classList.toggle('dark', t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches);
+			} catch {}
+		</script>
+	</head>
+	<body class="min-h-dvh bg-zinc-50 dark:bg-zinc-950">
+		<div class="flex min-h-dvh flex-col md:flex-row">
+			<aside class="border-b border-zinc-200 bg-white md:sticky md:top-0 md:h-dvh md:w-60 md:shrink-0 md:border-r md:border-b-0 dark:border-zinc-800 dark:bg-zinc-900">
+				<div class="flex items-center justify-between gap-2 px-4 py-4">
+					<a href="/admin" class="flex items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+						<Monogram /> Panel
+					</a>
+					<ThemeToggle />
+				</div>
+				<nav class="flex gap-1 overflow-x-auto px-2 pb-3 md:flex-col md:overflow-visible">
+					{
+						nav.map((n) => (
+							<a
+								href={n.href}
+								class:list={[
+									'flex shrink-0 items-center gap-2.5 rounded-md px-3 py-2 text-sm',
+									active(n.href)
+										? 'bg-zinc-100 font-medium text-zinc-900 dark:bg-zinc-800 dark:text-zinc-50'
+										: 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-100',
+								]}
+							>
+								<Icon name={n.icon} size={16} />
+								{n.label}
+							</a>
+						))
+					}
+				</nav>
+				<div class="hidden border-t border-zinc-200 px-2 py-3 md:block dark:border-zinc-800">
+					<a href="/" target="_blank" class="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100">
+						<Icon name="external" size={16} /> Ver sitio
+					</a>
+					<a href="/cdn-cgi/access/logout" class="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100">
+						<Icon name="logout" size={16} /> Cerrar sesión
+					</a>
+					<p class="truncate px-3 pt-2 text-xs text-zinc-400">{Astro.locals.adminEmail}</p>
+				</div>
+			</aside>
+
+			<main class="min-w-0 flex-1 px-4 py-8 sm:px-8">
+				<div class="mx-auto max-w-4xl">
+					{ok && <p class="mb-6 rounded-lg border border-brand-200 bg-brand-50 px-4 py-3 text-sm text-brand-800 dark:border-brand-900 dark:bg-brand-950/50 dark:text-brand-300">{ok}</p>}
+					{error && <p class="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/50 dark:text-red-300">{error}</p>}
+					<slot />
+				</div>
+			</main>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,82 @@
+---
+import Icon from './Icon.astro';
+import Monogram from './Monogram.astro';
+import ThemeToggle from './ThemeToggle.astro';
+
+interface Props {
+	name: string;
+}
+const { name } = Astro.props;
+
+const links = [
+	{ label: 'Sobre mí', href: '/#sobre-mi' },
+	{ label: 'Experiencia', href: '/#experiencia' },
+	{ label: 'Proyectos', href: '/proyectos' },
+	{ label: 'Educación', href: '/#educacion' },
+	{ label: 'Contacto', href: '/contacto' },
+];
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isActive = (href: string) => !href.includes('#') && (path === href || path.startsWith(href + '/'));
+---
+
+<header
+	class="sticky top-0 z-40 border-b border-zinc-200/70 bg-white/85 backdrop-blur supports-[backdrop-filter]:bg-white/70 dark:border-zinc-800/70 dark:bg-zinc-950/80"
+>
+	<div class="container-page flex h-16 items-center justify-between gap-4">
+		<a href="/" class="flex items-center gap-2.5 font-semibold text-zinc-900 dark:text-zinc-50">
+			<Monogram />
+			<span class="text-sm sm:text-base">{name}</span>
+		</a>
+
+		<nav aria-label="Principal" class="hidden items-center gap-1 md:flex">
+			{
+				links.map((l) => (
+					<a
+						href={l.href}
+						aria-current={isActive(l.href) ? 'page' : undefined}
+						class="rounded-md px-3 py-2 text-sm text-zinc-600 transition-colors hover:text-zinc-900 aria-[current=page]:text-zinc-900 aria-[current=page]:font-medium dark:text-zinc-400 dark:hover:text-zinc-100 dark:aria-[current=page]:text-zinc-50"
+					>
+						{l.label}
+					</a>
+				))
+			}
+		</nav>
+
+		<div class="flex items-center gap-1.5">
+			<a href="/cv" class="btn btn-secondary hidden !py-1.5 sm:inline-flex">
+				<Icon name="file" size={16} /> CV
+			</a>
+			<ThemeToggle />
+
+			<details class="group relative md:hidden">
+				<summary
+					class="inline-flex size-9 cursor-pointer list-none items-center justify-center rounded-lg text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800 [&::-webkit-details-marker]:hidden"
+					aria-label="Abrir menú"
+				>
+					<Icon name="menu" class="group-open:hidden" />
+					<Icon name="x" class="hidden group-open:block" />
+				</summary>
+				<nav
+					aria-label="Menú móvil"
+					class="card absolute right-0 mt-2 flex w-56 flex-col p-2 shadow-lg"
+				>
+					{
+						links.map((l) => (
+							<a href={l.href} class="rounded-md px-3 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800">
+								{l.label}
+							</a>
+						))
+					}
+					<a href="/cv" class="rounded-md px-3 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800">Ver CV</a>
+				</nav>
+			</details>
+		</div>
+	</div>
+</header>
+
+<script>
+	// Cierra el menú móvil al elegir una opción.
+	document.querySelectorAll('header details nav a').forEach((a) =>
+		a.addEventListener('click', () => a.closest('details')?.removeAttribute('open')),
+	);
+</script>

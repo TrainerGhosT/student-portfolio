@@ -1,0 +1,57 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import Icon from '../../components/Icon.astro';
+import { bucket } from '../../lib/content';
+import type { ContactMessage } from '../../lib/mail';
+
+const listing = await bucket().list({ prefix: 'messages/', limit: 1000 }).catch(() => null);
+const keys = (listing?.objects ?? []).map((o) => o.key).sort().reverse().slice(0, 50);
+const messages = (
+	await Promise.all(
+		keys.map(async (key) => {
+			const obj = await bucket().get(key);
+			return obj ? { key, ...(JSON.parse(await obj.text()) as ContactMessage) } : null;
+		}),
+	)
+).filter((m) => m !== null);
+
+const statusLabel = { sent: 'Correo enviado', failed: 'Falló el envío', skipped: 'Sin envío (falta API key)' } as const;
+---
+
+<AdminLayout title="Mensajes">
+	<h1 class="text-2xl">Mensajes</h1>
+	<p class="mt-1 text-sm text-zinc-500">Copia de respaldo de lo que llega por el formulario (últimos 50). También te llegan por correo.</p>
+
+	<ul class="mt-6 space-y-4">
+		{
+			messages.map((m) => (
+				<li class:list={['card p-5', !m.read && 'border-l-4 border-l-brand-500']}>
+					<div class="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+						<div class="min-w-0">
+							<p class="font-medium text-zinc-900 dark:text-zinc-100">{m.subject}</p>
+							<p class="text-sm text-zinc-500">
+								{m.name} · <a class="link" href={`mailto:${m.email}?subject=${encodeURIComponent('Re: ' + m.subject)}`}>{m.email}</a>
+								{m.company && <span> · {m.company}</span>}
+							</p>
+						</div>
+						<p class="shrink-0 text-xs text-zinc-500">{new Date(m.receivedAt).toLocaleString('es-CR', { timeZone: 'America/Costa_Rica' })}</p>
+					</div>
+					<p class="mt-3 text-sm whitespace-pre-wrap">{m.message}</p>
+					<div class="mt-4 flex flex-wrap items-center gap-2">
+						<span class="chip">{m.emailStatus ? statusLabel[m.emailStatus] : '—'}</span>
+						<form method="post" action="/api/admin/messages" class="ml-auto flex gap-2">
+							<input type="hidden" name="key" value={m.key} />
+							<button name="_action" value="toggle-read" class="btn btn-secondary !py-1.5 text-xs">
+								<Icon name="check" size={14} /> {m.read ? 'Marcar no leído' : 'Marcar leído'}
+							</button>
+							<button name="_action" value="delete" class="btn btn-danger !py-1.5 text-xs">
+								<Icon name="trash" size={14} /> Eliminar
+							</button>
+						</form>
+					</div>
+				</li>
+			))
+		}
+		{messages.length === 0 && <li class="card px-5 py-10 text-center text-sm text-zinc-500">No hay mensajes todavía.</li>}
+	</ul>
+</AdminLayout>

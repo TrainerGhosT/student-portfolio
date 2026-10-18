@@ -1,0 +1,66 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import AdminEditor from '../../../components/AdminEditor.astro';
+import Icon from '../../../components/Icon.astro';
+import { formatPeriod, formatRange, getEntries, getSingle } from '../../../lib/content';
+import { COLLECTIONS, isCollection, type ListCollection } from '../../../lib/schema';
+
+const { collection } = Astro.params;
+if (!isCollection(collection)) return Astro.rewrite('/404');
+const def = COLLECTIONS[collection];
+
+let single: { data: Record<string, any>; body: string } | null = null;
+let rows: { slug: string; title: string; meta: string }[] = [];
+
+if (def.kind === 'single') {
+	const doc = await getSingle(collection as 'profile' | 'skills');
+	single = { data: (doc?.data ?? {}) as Record<string, any>, body: doc?.body ?? '' };
+} else {
+	const entries = await getEntries(collection as ListCollection);
+	rows = entries.map((e) => {
+		const d = e.data as Record<string, any>;
+		const meta =
+			collection === 'projects'
+				? [formatPeriod(d.date), d.featured ? 'Destacado' : ''].filter(Boolean).join(' · ')
+				: [d.company ?? d.institution, formatRange(d.start, d.end)].filter(Boolean).join(' · ');
+		return { slug: e.slug, title: String(d[def.titleField ?? 'title'] ?? e.slug), meta };
+	});
+}
+---
+
+<AdminLayout title={def.label}>
+	<div class="mb-6 flex items-end justify-between gap-4">
+		<div>
+			<h1 class="text-2xl">{def.label}</h1>
+			<p class="mt-1 text-sm text-zinc-500">{def.description}</p>
+		</div>
+		{
+			def.kind === 'list' && (
+				<a href={`/admin/${collection}/nuevo`} class="btn btn-primary shrink-0">
+					<Icon name="plus" size={16} /> Nuevo
+				</a>
+			)
+		}
+	</div>
+
+	{single && <AdminEditor collection={collection} def={def} data={single.data} body={single.body} />}
+
+	{
+		def.kind === 'list' && (
+			<ul class="card divide-y divide-zinc-200 dark:divide-zinc-800">
+				{rows.map((r) => (
+					<li>
+						<a href={`/admin/${collection}/${r.slug}`} class="flex items-center justify-between gap-4 px-5 py-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/40">
+							<span class="min-w-0">
+								<span class="block truncate font-medium text-zinc-900 dark:text-zinc-100">{r.title}</span>
+								<span class="block truncate text-sm text-zinc-500">{r.meta}</span>
+							</span>
+							<Icon name="pencil" size={16} class="text-zinc-400" />
+						</a>
+					</li>
+				))}
+				{rows.length === 0 && <li class="px-5 py-8 text-center text-sm text-zinc-500">Todavía no hay elementos.</li>}
+			</ul>
+		)
+	}
+</AdminLayout>

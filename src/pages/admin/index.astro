@@ -1,0 +1,64 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import Icon from '../../components/Icon.astro';
+import { bucket, contentSource, CV_KEY, getEntries } from '../../lib/content';
+
+const [source, experience, education, projects, cv, messages] = await Promise.all([
+	contentSource(),
+	getEntries('experience'),
+	getEntries('education'),
+	getEntries('projects'),
+	bucket().head(CV_KEY).catch(() => null),
+	bucket().list({ prefix: 'messages/' }).catch(() => null),
+]);
+
+const cards = [
+	{ label: 'Experiencia', count: experience.length, href: '/admin/experience' },
+	{ label: 'Proyectos', count: projects.length, href: '/admin/projects' },
+	{ label: 'Educación', count: education.length, href: '/admin/education' },
+	{ label: 'Mensajes', count: messages?.objects.length ?? 0, href: '/admin/mensajes' },
+];
+---
+
+<AdminLayout title="Resumen">
+	<h1 class="text-2xl">Panel del portafolio</h1>
+	<p class="mt-1 text-sm text-zinc-500">Solo tú puedes ver esta sección. Los visitantes del sitio no tienen acceso ni enlaces hacia aquí.</p>
+
+	{
+		source === 'seed' && (
+			<div class="card mt-6 border-amber-300 bg-amber-50 p-5 dark:border-amber-900 dark:bg-amber-950/40">
+				<p class="font-medium text-amber-900 dark:text-amber-200">El bucket R2 está vacío</p>
+				<p class="mt-1 text-sm text-amber-800 dark:text-amber-300">
+					El sitio está mostrando el contenido inicial incluido en el proyecto. Impórtalo a R2 para empezar a editarlo
+					(también se importa solo la primera vez que guardes algo).
+				</p>
+				<form method="post" action="/api/admin/seed" class="mt-4">
+					<button class="btn btn-primary">
+						<Icon name="upload" size={16} /> Importar contenido inicial a R2
+					</button>
+				</form>
+			</div>
+		)
+	}
+
+	<div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+		{
+			cards.map((c) => (
+				<a href={c.href} class="card p-5 transition-colors hover:border-zinc-300 dark:hover:border-zinc-700">
+					<p class="text-sm text-zinc-500">{c.label}</p>
+					<p class="mt-1 text-3xl font-semibold text-zinc-900 tabular-nums dark:text-zinc-50">{c.count}</p>
+				</a>
+			))
+		}
+	</div>
+
+	<div class="card mt-6 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+		<div>
+			<p class="font-medium text-zinc-900 dark:text-zinc-100">Currículum</p>
+			<p class="text-sm text-zinc-500">
+				{cv ? `Subido el ${cv.uploaded.toLocaleDateString('es-CR')} · ${(cv.size / 1024).toFixed(0)} KB` : 'Usando el PDF incluido en el proyecto.'}
+			</p>
+		</div>
+		<a href="/admin/archivos" class="btn btn-secondary">Actualizar CV</a>
+	</div>
+</AdminLayout>

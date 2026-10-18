@@ -1,0 +1,111 @@
+---
+import { env } from 'cloudflare:workers';
+import Icon from './Icon.astro';
+
+const siteKey = env.TURNSTILE_SITE_KEY;
+const sent = Astro.url.searchParams.has('enviado');
+const error = Astro.url.searchParams.get('error');
+---
+
+<form
+	id="formulario"
+	action="/api/contact"
+	method="post"
+	class="card scroll-mt-24 space-y-5 p-5 sm:p-6"
+	data-contact-form
+	novalidate
+>
+	<div>
+		<h2 class="text-lg">Envíame un mensaje</h2>
+		<p class="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Te llegará directo a mi correo y te responderé lo antes posible.</p>
+	</div>
+
+	<div class="grid gap-4 sm:grid-cols-2">
+		<div>
+			<label for="cf-name" class="field-label">Nombre <span class="text-red-600" aria-hidden="true">*</span></label>
+			<input id="cf-name" name="name" class="field" required maxlength="100" autocomplete="name" />
+		</div>
+		<div>
+			<label for="cf-email" class="field-label">Correo <span class="text-red-600" aria-hidden="true">*</span></label>
+			<input id="cf-email" name="email" type="email" class="field" required maxlength="200" autocomplete="email" />
+		</div>
+	</div>
+
+	<div class="grid gap-4 sm:grid-cols-2">
+		<div>
+			<label for="cf-subject" class="field-label">Asunto <span class="text-red-600" aria-hidden="true">*</span></label>
+			<input id="cf-subject" name="subject" class="field" required maxlength="150" list="cf-subjects" />
+			<datalist id="cf-subjects">
+				<option value="Oportunidad laboral"></option>
+				<option value="Propuesta de proyecto"></option>
+				<option value="Colaboración"></option>
+				<option value="Consulta general"></option>
+			</datalist>
+		</div>
+		<div>
+			<label for="cf-company" class="field-label">Empresa <span class="font-normal text-zinc-500">(opcional)</span></label>
+			<input id="cf-company" name="company" class="field" maxlength="120" autocomplete="organization" />
+		</div>
+	</div>
+
+	<div>
+		<label for="cf-message" class="field-label">Mensaje <span class="text-red-600" aria-hidden="true">*</span></label>
+		<textarea id="cf-message" name="message" rows="6" class="field resize-y" required maxlength="5000"></textarea>
+	</div>
+
+	<!-- Honeypot: oculto para personas, visible para bots -->
+	<div class="hidden" aria-hidden="true">
+		<label>No llenar <input name="website" tabindex="-1" autocomplete="off" /></label>
+	</div>
+
+	{siteKey && <div class="cf-turnstile" data-sitekey={siteKey} data-language="es" data-theme="auto"></div>}
+
+	<div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+		<p data-status role="status" aria-live="polite" class:list={['text-sm', sent ? 'text-brand-700 dark:text-brand-400' : 'text-red-600 dark:text-red-400']}>
+			{sent ? '¡Gracias! Tu mensaje fue enviado.' : error}
+		</p>
+		<button type="submit" class="btn btn-primary">
+			<Icon name="send" size={16} /> Enviar mensaje
+		</button>
+	</div>
+</form>
+
+{siteKey && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
+
+<script>
+	const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+	if (form) {
+		const status = form.querySelector<HTMLElement>('[data-status]')!;
+		const button = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+		const setStatus = (msg: string, ok: boolean) => {
+			status.textContent = msg;
+			status.className = `text-sm ${ok ? 'text-brand-700 dark:text-brand-400' : 'text-red-600 dark:text-red-400'}`;
+		};
+
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			if (!form.checkValidity()) {
+				form.reportValidity();
+				return;
+			}
+			button.disabled = true;
+			setStatus('Enviando…', true);
+			try {
+				const res = await fetch(form.action, {
+					method: 'POST',
+					body: new FormData(form),
+					headers: { Accept: 'application/json' },
+				});
+				const data = (await res.json()) as { ok: boolean; message: string };
+				setStatus(data.message, data.ok);
+				if (data.ok) form.reset();
+			} catch {
+				setStatus('No se pudo enviar. Revisa tu conexión e intenta de nuevo.', false);
+			} finally {
+				button.disabled = false;
+				// @ts-expect-error turnstile se carga desde el script de Cloudflare
+				window.turnstile?.reset();
+			}
+		});
+	}
+</script>

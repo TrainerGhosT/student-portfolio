@@ -1,0 +1,4 @@
+# Copiar a .dev.vars (no se sube a git) para desarrollo local.
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxx
+# Clave secreta de prueba de Turnstile (siempre pasa):
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
