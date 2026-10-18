@@ -1,0 +1,55 @@
+---
+import '../styles/global.css';
+import type { Profile } from '../lib/content';
+
+interface Props {
+	title?: string;
+	description?: string;
+	profile: Profile;
+	noindex?: boolean;
+}
+
+const { profile, noindex = false } = Astro.props;
+const fullTitle = Astro.props.title ? `${Astro.props.title} | ${profile.name}` : `${profile.name} | ${profile.headline}`;
+const description = Astro.props.description ?? profile.tagline;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url);
+---
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="es_CR" />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta name="twitter:card" content="summary" />
+
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+	href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,700;1,400&family=Rubik:wght@500;600&display=swap"
+	rel="stylesheet"
+/>
+<script is:inline>
+	// Inline en el <head> para que el modo oscuro se aplique antes de pintar.
+	(() => {
+		let stored = null;
+		try {
+			stored = localStorage.getItem('theme');
+		} catch {}
+		const isDark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+		document.documentElement.classList[isDark ? 'add' : 'remove']('theme-dark');
+
+		// Guarda la preferencia cuando cambia el tema.
+		new MutationObserver(() => {
+			try {
+				localStorage.setItem('theme', document.documentElement.classList.contains('theme-dark') ? 'dark' : 'light');
+			} catch {}
+		}).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+	})();
+</script>

@@ -6,41 +6,114 @@ interface Props {
 	items: Doc<Education>[];
 }
 const { items } = Astro.props;
-const academic = items.filter((i) => i.data.kind !== 'certification');
-const certs = items.filter((i) => i.data.kind === 'certification');
 const groups = [
-	{ title: 'Formación académica', icon: 'graduation' as const, items: academic },
-	{ title: 'Certificaciones', icon: 'award' as const, items: certs },
+	{ title: 'Formación académica', icon: 'graduation' as const, items: items.filter((i) => i.data.kind !== 'certification') },
+	{ title: 'Certificaciones', icon: 'award' as const, items: items.filter((i) => i.data.kind === 'certification') },
 ].filter((g) => g.items.length > 0);
 ---
 
-<div class="grid gap-6 md:grid-cols-2">
+<div class="groups">
 	{
 		groups.map((group) => (
-			<div class="card p-6">
-				<h3 class="flex items-center gap-2 text-sm font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
-					<Icon name={group.icon} size={16} /> {group.title}
+			<section class="box group">
+				<h3>
+					<Icon icon={group.icon} size="1.4em" gradient />
+					{group.title}
 				</h3>
-				<ul class="mt-5 space-y-5">
+				<ul>
 					{group.items.map(({ data, body }) => (
 						<li>
-							<p class="font-medium text-zinc-900 dark:text-zinc-100">{data.title}</p>
-							<p class="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">{data.institution}</p>
-							<p class="mt-1 text-xs text-zinc-500 tabular-nums dark:text-zinc-500">
-								{formatRange(data.start, data.end, data.status || 'En curso')}
-							</p>
-							{body && (
-								<div class="prose prose-sm prose-zinc dark:prose-invert mt-2 max-w-none" set:html={renderMarkdown(body)} />
-							)}
+							<p class="title">{data.title}</p>
+							<p class="institution">{data.institution}</p>
+							<p class="dates">{formatRange(data.start, data.end, data.status || 'En curso')}</p>
+							{body && <div class="prose-portfolio detail" set:html={renderMarkdown(body)} />}
 							{data.credentialUrl && (
-								<a href={data.credentialUrl} target="_blank" rel="noopener noreferrer" class="link mt-1 inline-flex items-center gap-1 text-sm">
-									Ver credencial <Icon name="external" size={13} />
+								<a href={data.credentialUrl} target="_blank" rel="noopener noreferrer" class="credential">
+									Ver credencial <Icon icon="external" />
 								</a>
 							)}
 						</li>
 					))}
 				</ul>
-			</div>
+			</section>
 		))
 	}
 </div>
+
+<style>
+	.groups {
+		display: grid;
+		gap: 1.5rem;
+	}
+
+	.group {
+		padding: 1.5rem;
+	}
+
+	h3 {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		font-size: var(--text-lg);
+	}
+
+	ul {
+		display: grid;
+		gap: 1.5rem;
+		list-style: none;
+		padding: 0;
+		margin-top: 1.5rem;
+	}
+
+	li {
+		padding-left: 1rem;
+		border-left: 2px solid var(--accent-overlay);
+	}
+
+	.title {
+		font-family: var(--font-brand);
+		font-weight: 600;
+		color: var(--gray-0);
+		font-size: var(--text-md);
+		line-height: 1.25;
+	}
+
+	.institution {
+		margin-top: 0.25rem;
+		color: var(--gray-300);
+	}
+
+	.dates {
+		margin-top: 0.25rem;
+		font-size: var(--text-sm);
+		color: var(--gray-400);
+	}
+
+	.detail {
+		margin-top: 0.5rem;
+		color: var(--gray-300);
+	}
+
+	.credential {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		margin-top: 0.5rem;
+		font-size: var(--text-sm);
+	}
+
+	@media (min-width: 50em) {
+		.groups {
+			grid-template-columns: 1fr 1fr;
+			gap: 2.5rem;
+		}
+
+		.group {
+			padding: 2.5rem;
+		}
+
+		h3 {
+			font-size: var(--text-xl);
+		}
+	}
+</style>

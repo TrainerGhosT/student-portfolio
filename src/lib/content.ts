@@ -18,6 +18,10 @@ export interface Profile {
 	headline: string;
 	tagline: string;
 	location?: string;
+	birthDate?: string;
+	ageDisplay?: 'age' | 'birthdate' | 'both' | 'none';
+	roles?: string[];
+	avatar?: string;
 	availability?: string;
 	focus?: string[];
 	email?: string;
@@ -137,6 +141,25 @@ export function formatRange(start?: string, end?: string, ongoing = 'Presente'):
 	const e = end ? formatPeriod(end) : ongoing;
 	if (!s) return end ? e : '';
 	return s === e ? s : `${s} — ${e}`;
+}
+
+/** Edad cumplida hoy (zona horaria de Costa Rica). Se calcula en cada visita, así que se actualiza sola. */
+export function computeAge(birthDate: string, now = new Date()): number | null {
+	const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(birthDate);
+	if (!m) return null;
+	const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Costa_Rica' }).format(now); // AAAA-MM-DD
+	const [ty, tm, td] = today.split('-').map(Number);
+	const [by, bm, bd] = [Number(m[1]), Number(m[2]), Number(m[3])];
+	let age = ty - by;
+	if (tm < bm || (tm === bm && td < bd)) age--;
+	return age;
+}
+
+const LONG_MONTHS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
+export function formatBirthDate(birthDate: string): string {
+	const [y, m, d] = birthDate.split('-').map(Number);
+	return `${d} de ${LONG_MONTHS[m - 1]} de ${y}`;
 }
 
 function periodKey(value?: string | number): string {

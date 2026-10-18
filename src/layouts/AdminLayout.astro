@@ -1,6 +1,6 @@
 ---
-import '../styles/global.css';
-import Icon, { type IconName } from '../components/Icon.astro';
+import '../styles/admin.css';
+import Icon, { type IconName } from '../components/UiIcon.astro';
 import Monogram from '../components/Monogram.astro';
 import ThemeToggle from '../components/ThemeToggle.astro';
 
@@ -34,10 +34,19 @@ const active = (href: string) => (href === '/admin' ? path === '/admin' : path.s
 		<title>{title} · Admin</title>
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<script is:inline>
-			try {
-				const t = localStorage.getItem('theme');
-				document.documentElement.classList.toggle('dark', t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches);
-			} catch {}
+			(() => {
+				let t = null;
+				try {
+					t = localStorage.getItem('theme');
+				} catch {}
+				const dark = t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+				document.documentElement.classList.toggle('theme-dark', dark);
+				new MutationObserver(() => {
+					try {
+						localStorage.setItem('theme', document.documentElement.classList.contains('theme-dark') ? 'dark' : 'light');
+					} catch {}
+				}).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+			})();
 		</script>
 	</head>
 	<body class="min-h-dvh bg-zinc-50 dark:bg-zinc-950">

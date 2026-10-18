@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
-import { bucket } from '../../lib/content';
+import { bucket, getSingle } from '../../lib/content';
+import { whatsappUrl } from '../../lib/whatsapp';
 import { sendContactEmail, verifyTurnstile, type ContactMessage } from '../../lib/mail';
 
 const LIMITS = { name: 100, email: 200, subject: 150, message: 5000, company: 120 };
@@ -39,6 +40,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 	// Honeypot: los bots suelen llenar todos los campos.
 	if (get('website')) return reply(true, 'Mensaje enviado.');
 
+	const channel = ['email', 'whatsapp', 'both'].includes(get('channel')) ? get('channel') : 'email';
 	const data = {
 		name: get('name'),
 		email: get('email'),
@@ -46,6 +48,15 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 		message: get('message'),
 		company: get('company'),
 	};
+
+	// Envío por WhatsApp (respaldo sin JavaScript; con JS el navegador abre WhatsApp directamente).
+	const profile = (await getSingle('profile'))?.data;
+	const waLink = channel !== 'email' && profile?.whatsapp ? whatsappUrl(profile.whatsapp, data) : null;
+	if (channel === 'whatsapp') {
+		if (!data.name || !data.message) return reply(false, 'Completa tu nombre y el mensaje.');
+		if (!waLink) return reply(false, 'WhatsApp no está disponible en este momento.');
+		return wantsJson ? json({ ok: true, message: 'Abriendo WhatsApp…', whatsapp: waLink }) : Response.redirect(waLink, 303);
+	}
 
 	if (!data.name || !data.email || !data.subject || !data.message) {
 		return reply(false, 'Completa nombre, correo, asunto y mensaje.');
@@ -64,6 +75,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 		...data,
 		company: data.company || undefined,
 		read: false,
+		channel: channel === 'both' ? 'both' : 'email',
 	};
 
 	msg.emailStatus = await sendContactEmail(msg);
@@ -77,6 +89,9 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 		console.error('No se pudo guardar el mensaje en R2', err);
 		if (msg.emailStatus !== 'sent') return reply(false, 'No se pudo enviar el mensaje. Escríbeme directamente por correo.', 500);
 	}
+
+	// "Ambos" sin JavaScript: después del correo, continuar en WhatsApp.
+	if (waLink && !wantsJson) return Response.redirect(waLink, 303);
 
 	if (msg.emailStatus === 'failed') {
 		// Quedó guardado en R2, así que no se pierde; avisamos igual de forma amable.

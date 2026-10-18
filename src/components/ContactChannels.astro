@@ -1,77 +1,190 @@
 ---
 import { renderSVG } from 'uqr';
 import type { Profile } from '../lib/content';
+import { whatsappUrl } from '../lib/whatsapp';
 import Icon from './Icon.astro';
+import Pill from './Pill.astro';
 
 interface Props {
 	profile: Profile;
+	/** 'cards': correo, teléfono y redes · 'whatsapp': tarjeta de WhatsApp con QR */
+	part: 'cards' | 'whatsapp';
 }
-const { profile } = Astro.props;
+const { profile, part } = Astro.props;
 
-const waUrl = profile.whatsapp
-	? `https://wa.me/${profile.whatsapp.replace(/\D/g, '')}${profile.whatsappMessage ? `?text=${encodeURIComponent(profile.whatsappMessage)}` : ''}`
-	: null;
-const waQr = waUrl ? renderSVG(waUrl, { border: 1, pixelSize: 4, whiteColor: '#ffffff', blackColor: '#18181b' }) : null;
+const waUrl = profile.whatsapp ? whatsappUrl(profile.whatsapp, profile.whatsappMessage) : null;
+const waQr = waUrl ? renderSVG(waUrl, { border: 1, whiteColor: '#ffffff', blackColor: '#141925' }) : null;
 
-const channels = [
-	profile.email && { icon: 'mail' as const, label: 'Correo', value: profile.email, href: `mailto:${profile.email}` },
-	profile.phone && { icon: 'phone' as const, label: 'Teléfono', value: profile.phone, href: `tel:${profile.phone.replace(/[^\d+]/g, '')}` },
-	profile.linkedin && { icon: 'linkedin' as const, label: 'LinkedIn', value: profile.linkedin.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''), href: profile.linkedin, external: true },
-	profile.github && { icon: 'github' as const, label: 'GitHub', value: profile.github.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''), href: profile.github, external: true },
-].filter(Boolean) as { icon: 'mail' | 'phone' | 'linkedin' | 'github'; label: string; value: string; href: string; external?: boolean }[];
+const cards = [
+	profile.phone && {
+		type: 'Celular',
+		value: profile.phone,
+		icon: 'device-mobile' as const,
+		href: `tel:${profile.phone.replace(/[^\d+]/g, '')}`,
+	},
+	profile.email && { type: 'Correo', value: profile.email, icon: 'envelope-simple' as const, href: `mailto:${profile.email}` },
+	profile.linkedin && {
+		type: 'LinkedIn',
+		value: profile.linkedin.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''),
+		icon: 'linkedin-logo' as const,
+		href: profile.linkedin,
+		external: true,
+	},
+	profile.github && {
+		type: 'GitHub',
+		value: profile.github.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''),
+		icon: 'github-logo' as const,
+		href: profile.github,
+		external: true,
+	},
+].filter(Boolean) as {
+	type: string;
+	value: string;
+	icon: 'device-mobile' | 'envelope-simple' | 'linkedin-logo' | 'github-logo';
+	href: string;
+	external?: boolean;
+}[];
 ---
 
-<div class="space-y-4">
+<div class="channels">
 	{
-		waUrl && (
-			<div class="card overflow-hidden">
-				<div class="p-5">
-					<div class="flex items-start gap-4">
-						<span class="inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#25D366]/15 text-[#128C7E] dark:text-[#25D366]">
-							<Icon name="whatsapp" size={20} />
-						</span>
-						<div class="min-w-0 flex-1">
-							<p class="font-medium text-zinc-900 dark:text-zinc-100">WhatsApp</p>
-							<p class="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">La forma más rápida de contactarme.</p>
-						</div>
-					</div>
-					<div class="mt-4 flex items-end justify-between gap-4">
-						<a href={waUrl} target="_blank" rel="noopener noreferrer" class="btn bg-[#25D366] whitespace-nowrap text-zinc-950 hover:bg-[#1ebe5b]">
-							<Icon name="whatsapp" size={16} /> Abrir chat
-						</a>
-						{waQr && (
-							<div class="hidden items-center gap-3 sm:flex">
-								<p class="max-w-[7rem] text-right text-xs text-zinc-500">O escanea el código desde tu teléfono</p>
-								<div class="w-20 overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-700 [&>svg]:h-auto [&>svg]:w-full" set:html={waQr} />
-							</div>
-						)}
-					</div>
+		part === 'whatsapp' && waUrl && (
+			<div class="contact-card whatsapp">
+				<div class="wa-info">
+					<Icon icon="whatsapp-logo" size="1.8rem" gradient />
+					<Pill>WhatsApp</Pill>
+					<p>Escríbeme directamente; normalmente respondo el mismo día.</p>
+					<a class="wa-button" href={waUrl} target="_blank" rel="noopener noreferrer">
+						<Icon icon="whatsapp-logo" size="1.2em" /> Abrir chat
+					</a>
 				</div>
+				{waQr && (
+					<div class="qr">
+						<div class="qr-code" set:html={waQr} />
+						<span>Escanéalo desde tu teléfono</span>
+					</div>
+				)}
 			</div>
 		)
 	}
 
-	<ul class="card divide-y divide-zinc-200 dark:divide-zinc-800">
+	{part === 'cards' && <div class="contact-cards">
 		{
-			channels.map((c) => (
-				<li>
-					<a
-						href={c.href}
-						target={c.external ? '_blank' : undefined}
-						rel={c.external ? 'noopener noreferrer' : undefined}
-						class="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
-					>
-						<span class="inline-flex size-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-							<Icon name={c.icon} size={18} />
-						</span>
-						<span class="min-w-0">
-							<span class="block text-xs text-zinc-500 dark:text-zinc-400">{c.label}</span>
-							<span class="block truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">{c.value}</span>
-						</span>
-						{c.external && <Icon name="external" size={14} class="ml-auto text-zinc-400" />}
-					</a>
-				</li>
+			cards.map((c) => (
+				<a
+					class="contact-card"
+					href={c.href}
+					target={c.external ? '_blank' : undefined}
+					rel={c.external ? 'noopener noreferrer' : undefined}
+				>
+					<Icon icon={c.icon} size="1.8rem" gradient />
+					<Pill>{c.type}</Pill>
+					<span class="value">{c.value}</span>
+				</a>
 			))
 		}
-	</ul>
+	</div>}
 </div>
+
+<style>
+	.channels {
+		display: grid;
+		gap: 1.5rem;
+	}
+
+	.contact-cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+		gap: 1.5rem;
+	}
+
+	.contact-card {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 1.5rem;
+		text-align: center;
+		text-decoration: none;
+		color: var(--gray-200);
+		background: var(--gray-999_40);
+		border: 1px solid var(--gray-800);
+		border-radius: 0.75rem;
+		box-shadow: var(--shadow-sm);
+		transition: box-shadow var(--theme-transition);
+	}
+
+	a.contact-card:hover {
+		box-shadow: var(--shadow-md);
+	}
+
+	.value {
+		color: var(--link-color);
+		word-break: break-word;
+	}
+
+	.whatsapp {
+		gap: 1.5rem;
+		padding: 2rem 1.5rem;
+	}
+
+	.wa-info {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.6rem;
+		max-width: 22rem;
+	}
+
+	.wa-info p {
+		color: var(--gray-300);
+		font-size: var(--text-sm);
+	}
+
+	.wa-button {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-top: 0.25rem;
+		padding: 0.6rem 1.4rem;
+		border-radius: 999rem;
+		background: #25d366;
+		color: #0b1a10;
+		font-weight: 700;
+		text-decoration: none;
+		box-shadow: var(--shadow-md);
+	}
+
+	.wa-button:hover {
+		background: #1ebe5b;
+	}
+
+	.qr {
+		display: none;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.75rem;
+		color: var(--gray-400);
+	}
+
+	.qr-code {
+		width: 7.5rem;
+		padding: 0.25rem;
+		background: #fff;
+		border-radius: 0.75rem;
+		box-shadow: var(--shadow-sm);
+	}
+
+	.qr-code :global(svg) {
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+
+	@media (min-width: 50em) {
+		.qr {
+			display: flex;
+		}
+	}
+</style>

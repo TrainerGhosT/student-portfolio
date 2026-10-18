@@ -10,6 +10,7 @@ export interface ContactMessage {
 	company?: string;
 	read?: boolean;
 	emailStatus?: 'sent' | 'failed' | 'skipped';
+	channel?: 'email' | 'both';
 }
 
 const escapeHtml = (s: string) =>

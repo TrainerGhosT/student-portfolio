@@ -1,0 +1,32 @@
+---
+import { brandColor, techIcon } from '../lib/tech';
+
+interface Props {
+	name: string;
+	size?: string;
+}
+const { name, size = '1em' } = Astro.props;
+const t = techIcon(name);
+
+let svg = '';
+if (t?.kind === 'brand') {
+	svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${brandColor(t.icon.hex)}" aria-hidden="true"><path d="${t.icon.path}"/></svg>`;
+} else if (t?.kind === 'generic') {
+	svg = t.svg.replace(/\s*class="[^"]*"/, '').replace('<svg', '<svg aria-hidden="true"');
+}
+---
+
+{svg && <span class="tech-icon" style={{ '--size': size }} set:html={svg} />}
+
+<style>
+	.tech-icon {
+		display: inline-flex;
+		flex-shrink: 0;
+		width: var(--size);
+		height: var(--size);
+	}
+	.tech-icon :global(svg) {
+		width: 100%;
+		height: 100%;
+	}
+</style>

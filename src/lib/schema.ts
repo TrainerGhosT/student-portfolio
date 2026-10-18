@@ -14,6 +14,7 @@ export type FieldType =
 	| 'url'
 	| 'email'
 	| 'period' // "2024" o "2024-03"
+	| 'date' // "2001-12-16"
 	| 'tags' // lista separada por comas
 	| 'boolean'
 	| 'number'
@@ -53,6 +54,21 @@ export const COLLECTIONS = {
 			{ name: 'headline', label: 'Titular', type: 'text', required: true, placeholder: 'Ingeniero en Sistemas y Automatizaciones' },
 			{ name: 'tagline', label: 'Frase corta (hero)', type: 'textarea', required: true },
 			{ name: 'location', label: 'Ubicación', type: 'text' },
+			{ name: 'birthDate', label: 'Fecha de nacimiento', type: 'date', placeholder: '2001-12-16' },
+			{
+				name: 'ageDisplay',
+				label: 'Mostrar en el inicio',
+				type: 'select',
+				help: 'La edad se calcula sola cada día a partir de la fecha de nacimiento.',
+				options: [
+					{ value: 'age', label: 'Edad (se actualiza sola)' },
+					{ value: 'birthdate', label: 'Fecha de nacimiento' },
+					{ value: 'both', label: 'Edad y fecha' },
+					{ value: 'none', label: 'No mostrar' },
+				],
+			},
+			{ name: 'roles', label: 'Etiquetas del inicio', type: 'tags', help: 'Píldoras bajo el titular. Separadas por comas.' },
+			{ name: 'avatar', label: 'Imagen del inicio (opcional)', type: 'image', help: 'Si la dejas vacía se muestra el monograma con tus iniciales.' },
 			{ name: 'availability', label: 'Disponibilidad', type: 'text', placeholder: 'Abierto a nuevas oportunidades' },
 			{ name: 'focus', label: 'Áreas de enfoque', type: 'tags', help: 'Separadas por comas.' },
 			{ name: 'email', label: 'Correo público', type: 'email' },
@@ -196,6 +212,11 @@ export function formToData(def: CollectionDef, form: FormData): { data: Record<s
 			case 'period':
 				if (value !== '' && !/^\d{4}(-(0[1-9]|1[0-2]))?$/.test(value)) {
 					errors.push(`«${field.label}» debe tener el formato AAAA o AAAA-MM.`);
+				}
+				break;
+			case 'date':
+				if (value !== '' && !/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(value)) {
+					errors.push(`«${field.label}» debe tener el formato AAAA-MM-DD.`);
 				}
 				break;
 			case 'url':

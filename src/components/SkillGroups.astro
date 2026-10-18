@@ -1,23 +1,119 @@
 ---
 import type { SkillGroup } from '../lib/content';
+import { techIcon } from '../lib/tech';
+import TechPill from './TechPill.astro';
 
 interface Props {
 	groups: SkillGroup[];
 }
 const { groups } = Astro.props;
+// Los grupos sin ningún logo reconocido (habilidades blandas, idiomas) se muestran como lista simple.
+const isTech = (g: SkillGroup) => g.items.some((i) => techIcon(i));
+const tech = groups.filter(isTech);
+const soft = groups.filter((g) => !isTech(g));
 ---
 
-<dl class="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+<div class="skills">
+	<div class="tech">
+		{
+			tech.map((g) => (
+				<section class="box group">
+					<h3>{g.name}</h3>
+					<div class="pills">
+						{g.items.map((item) => (
+							<TechPill name={item} />
+						))}
+					</div>
+				</section>
+			))
+		}
+	</div>
 	{
-		groups.map((g) => (
-			<div>
-				<dt class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{g.name}</dt>
-				<dd class="mt-3 flex flex-wrap gap-1.5">
-					{g.items.map((item) => (
-						<span class="chip">{item}</span>
-					))}
-				</dd>
+		soft.length > 0 && (
+			<div class="soft">
+				{soft.map((g) => (
+					<section class="box group">
+						<h3>{g.name}</h3>
+						<ul>
+							{g.items.map((item) => (
+								<li>{item}</li>
+							))}
+						</ul>
+					</section>
+				))}
 			</div>
-		))
+		)
 	}
-</dl>
+</div>
+
+<style>
+	.skills,
+	.tech,
+	.soft {
+		display: grid;
+		gap: 1.5rem;
+	}
+
+	.group {
+		padding: 1.5rem;
+	}
+
+	h3 {
+		font-size: var(--text-lg);
+	}
+
+	.pills {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin-top: 1.25rem;
+	}
+
+	ul {
+		display: grid;
+		gap: 0.5rem;
+		list-style: none;
+		padding: 0;
+		margin-top: 1.25rem;
+		color: var(--gray-300);
+	}
+
+	li {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+	}
+
+	li::before {
+		content: '';
+		width: 0.45rem;
+		height: 0.45rem;
+		border-radius: 999rem;
+		background: var(--gradient-accent);
+		flex-shrink: 0;
+	}
+
+	@media (min-width: 50em) {
+		.skills {
+			gap: 2.5rem;
+		}
+
+		.tech {
+			grid-template-columns: repeat(2, 1fr);
+			gap: 2.5rem;
+		}
+
+		.soft {
+			grid-template-columns: repeat(3, 1fr);
+			gap: 2.5rem;
+		}
+
+		.group {
+			padding: 2.5rem;
+		}
+
+		h3 {
+			font-size: var(--text-xl);
+		}
+	}
+</style>

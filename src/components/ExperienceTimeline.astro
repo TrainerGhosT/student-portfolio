@@ -1,5 +1,6 @@
 ---
 import { formatRange, renderMarkdown, type Doc, type Experience } from '../lib/content';
+import TechPill from './TechPill.astro';
 
 interface Props {
 	items: Doc<Experience>[];
@@ -7,42 +8,144 @@ interface Props {
 const { items } = Astro.props;
 ---
 
-<ol class="relative space-y-10 border-l border-zinc-200 pl-6 sm:pl-8 dark:border-zinc-800">
+<ol class="timeline">
 	{
 		items.map(({ data, body }) => (
-			<li class="relative">
-				<span
-					class:list={[
-						'absolute top-1.5 -left-[1.95rem] size-3 rounded-full ring-4 ring-white sm:-left-[2.45rem] dark:ring-zinc-950',
-						data.end ? 'bg-zinc-300 dark:bg-zinc-600' : 'bg-brand-500',
-					]}
-					aria-hidden="true"
-				/>
-				<div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
-					<h3 class="text-lg">{data.role}</h3>
-					<p class="shrink-0 text-sm text-zinc-500 tabular-nums dark:text-zinc-400">
-						{formatRange(data.start, data.end)}
+			<li class:list={['item', { current: !data.end }]}>
+				<span class="dot" aria-hidden="true" />
+				<div class="box entry">
+					<div class="head">
+						<h3>{data.role}</h3>
+						<p class="dates">{formatRange(data.start, data.end)}</p>
+					</div>
+					<p class="company">
+						<strong>{data.company}</strong>
+						{data.employmentType && <span> · {data.employmentType}</span>}
+						{data.location && <span> · {data.location}</span>}
 					</p>
+					{body && <div class="prose-portfolio body" set:html={renderMarkdown(body)} />}
+					{data.stack && data.stack.length > 0 && (
+						<div class="stack-list" aria-label="Tecnologías">
+							{data.stack.map((t) => (
+								<TechPill name={t} />
+							))}
+						</div>
+					)}
 				</div>
-				<p class="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-					<span class="font-medium text-zinc-800 dark:text-zinc-200">{data.company}</span>
-					{data.employmentType && <span> · {data.employmentType}</span>}
-					{data.location && <span> · {data.location}</span>}
-				</p>
-				{body && (
-					<div
-						class="prose prose-zinc prose-sm dark:prose-invert prose-li:my-1 prose-strong:text-zinc-900 dark:prose-strong:text-zinc-100 mt-4 max-w-none"
-						set:html={renderMarkdown(body)}
-					/>
-				)}
-				{data.stack && data.stack.length > 0 && (
-					<ul class="mt-4 flex flex-wrap gap-1.5" aria-label="Tecnologías">
-						{data.stack.map((t) => (
-							<li class="chip">{t}</li>
-						))}
-					</ul>
-				)}
 			</li>
 		))
 	}
 </ol>
+
+<style>
+	.timeline {
+		position: relative;
+		display: grid;
+		gap: 2rem;
+		list-style: none;
+		padding: 0 0 0 1.75rem;
+		margin: 0;
+	}
+
+	.timeline::before {
+		content: '';
+		position: absolute;
+		top: 0.5rem;
+		bottom: 0.5rem;
+		left: 0.4rem;
+		width: 2px;
+		background: linear-gradient(var(--accent-regular), var(--gray-800));
+		border-radius: 999rem;
+	}
+
+	.item {
+		position: relative;
+	}
+
+	.dot {
+		position: absolute;
+		top: 1.9rem;
+		left: -1.75rem;
+		width: 0.95rem;
+		height: 0.95rem;
+		border-radius: 999rem;
+		background: var(--gray-999);
+		border: 2px solid var(--gray-600);
+	}
+
+	.current .dot {
+		background: var(--accent-regular);
+		border-color: var(--accent-regular);
+		box-shadow: 0 0 0 5px var(--accent-overlay);
+	}
+
+	.entry {
+		padding: 1.5rem;
+	}
+
+	.head {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	h3 {
+		font-size: var(--text-lg);
+	}
+
+	.dates {
+		color: var(--gray-400);
+		font-size: var(--text-sm);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.company {
+		margin-top: 0.35rem;
+		color: var(--gray-300);
+	}
+
+	.company strong {
+		color: var(--gray-100);
+	}
+
+	.body {
+		margin-top: 1rem;
+		color: var(--gray-300);
+	}
+
+	.stack-list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin-top: 1.25rem;
+	}
+
+	@media (min-width: 50em) {
+		.timeline {
+			padding-left: 2.5rem;
+		}
+
+		.dot {
+			left: -2.5rem;
+		}
+
+		.entry {
+			padding: 2rem 2.5rem;
+		}
+
+		.head {
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: baseline;
+			gap: 1.5rem;
+		}
+
+		h3 {
+			font-size: var(--text-xl);
+		}
+
+		.dates {
+			flex-shrink: 0;
+		}
+	}
+</style>

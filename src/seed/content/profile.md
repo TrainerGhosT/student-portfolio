@@ -3,6 +3,12 @@ name: Dylan Montoya
 headline: Ingeniero en Sistemas y Automatizaciones
 tagline: Diseño e implemento software que convierte tareas manuales en procesos automáticos, apoyado en servicios en la nube.
 location: Cartago, Costa Rica
+birthDate: 2001-12-16
+ageDisplay: age
+roles:
+  - Developer
+  - Automatización
+  - Cloud
 availability: Abierto a nuevas oportunidades y colaboraciones
 focus:
   - Automatización de procesos

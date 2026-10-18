@@ -7,7 +7,8 @@
 - Cloudflare Pages
 - Cloudflare R2
 - AWS S3
-- Git y GitHub
+- Git
+- GitHub
 - Linux
 - Windows Server
 
@@ -19,6 +20,8 @@
 - JavaScript
 - Tailwind CSS
 - Vite
+- HTML
+- CSS
 
 ## Backend y automatización
 - Python
@@ -27,13 +30,28 @@
 - C# / .NET
 - Java
 - Power Apps
-- Power BI
 
 ## Datos
 - SQL Server
 - MySQL
 - Data Warehouse
 - Modelado relacional
+- Power BI
+
+## Habilidades
+- Trabajo en equipo
+- Comunicación asertiva
+- Profesionalismo
+- Adaptabilidad
+- Aprendizaje permanente
+- Disposición
+
+## Fortalezas
+- Responsabilidad
+- Disciplina
+- Dedicación
+- Paciencia
+- Perseverancia
 
 ## Idiomas
 - Español (nativo)

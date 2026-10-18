@@ -1,7 +1,7 @@
 ---
-import '../styles/global.css';
+import MainHead from '../components/MainHead.astro';
+import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
-import Header from '../components/Header.astro';
 import { getSingle, type Profile } from '../lib/content';
 
 interface Props {
@@ -10,56 +10,110 @@ interface Props {
 	noindex?: boolean;
 }
 
-const profileDoc = await getSingle('profile');
-const profile: Profile = profileDoc?.data ?? { name: 'Dylan Montoya', headline: '', tagline: '' };
-
-const siteTitle = `${profile.name} — ${profile.headline}`;
-const { title, description = profile.tagline, noindex = false } = Astro.props;
-const fullTitle = title ? `${title} · ${profile.name}` : siteTitle;
-const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url);
+const { title, description, noindex = false } = Astro.props;
+const profile: Profile = (await getSingle('profile'))?.data ?? { name: 'Dylan Montoya', headline: '', tagline: '' };
 ---
 
-<!doctype html>
 <html lang="es">
 	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>{fullTitle}</title>
-		<meta name="description" content={description} />
-		<link rel="canonical" href={canonical} />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-		<meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)" />
-		{noindex && <meta name="robots" content="noindex, nofollow" />}
-
-		<meta property="og:type" content="website" />
-		<meta property="og:locale" content="es_CR" />
-		<meta property="og:title" content={fullTitle} />
-		<meta property="og:description" content={description} />
-		<meta property="og:url" content={canonical} />
-		<meta name="twitter:card" content="summary" />
-
-		<!-- Aplica el tema antes de pintar para evitar parpadeo. -->
-		<script is:inline>
-			(() => {
-				let theme = null;
-				try {
-					theme = localStorage.getItem('theme');
-				} catch {}
-				const dark = theme ? theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-				document.documentElement.classList.toggle('dark', dark);
-			})();
-		</script>
-		<slot name="head" />
+		<MainHead title={title} description={description} profile={profile} noindex={noindex} />
 	</head>
-	<body class="flex min-h-dvh flex-col">
-		<a href="#contenido" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-md focus:bg-white focus:px-3 focus:py-2 focus:shadow">
-			Saltar al contenido
-		</a>
-		<Header name={profile.name} />
-		<main id="contenido" class="flex-1">
-			<slot />
-		</main>
-		<Footer profile={profile} />
+	<body>
+		<div class="stack backgrounds">
+			<Nav profile={profile} />
+			<main id="contenido">
+				<slot />
+			</main>
+			<Footer profile={profile} />
+		</div>
+
+		<script>
+			// Add “loaded” class once the document has completely loaded.
+			addEventListener('load', () => document.documentElement.classList.add('loaded'));
+		</script>
+
+		<style>
+			:root {
+				--_placeholder-bg: linear-gradient(transparent, transparent);
+				--bg-image-main: url('/assets/backgrounds/bg-main-light-800w.jpg');
+				--bg-image-main-curves: url('/assets/backgrounds/bg-main-light.svg');
+				--bg-image-subtle-1: var(--_placeholder-bg);
+				--bg-image-subtle-2: var(--_placeholder-bg);
+				--bg-image-footer: var(--_placeholder-bg);
+				--bg-svg-blend-mode: overlay;
+				--bg-blend-mode: darken;
+				--bg-image-aspect-ratio: 2.25;
+				--bg-scale: 1.68;
+				--bg-aspect-ratio: calc(var(--bg-image-aspect-ratio) / var(--bg-scale));
+				--bg-gradient-size: calc(var(--bg-scale) * 100%);
+			}
+
+			:root.theme-dark {
+				--bg-image-main: url('/assets/backgrounds/bg-main-dark-800w.jpg');
+				--bg-image-main-curves: url('/assets/backgrounds/bg-main-dark.svg');
+				--bg-svg-blend-mode: darken;
+				--bg-blend-mode: lighten;
+			}
+
+			/* These backgrounds are displayed below the fold, so we lazy load them
+			   once the `.loaded` class has been set.  */
+			:root.loaded {
+				--bg-image-subtle-1: url('/assets/backgrounds/bg-subtle-1-light-800w.jpg');
+				--bg-image-subtle-2: url('/assets/backgrounds/bg-subtle-2-light-800w.jpg');
+				--bg-image-footer: url('/assets/backgrounds/bg-footer-light-800w.jpg');
+			}
+			:root.loaded.theme-dark {
+				--bg-image-subtle-1: url('/assets/backgrounds/bg-subtle-1-dark-800w.jpg');
+				--bg-image-subtle-2: url('/assets/backgrounds/bg-subtle-2-dark-800w.jpg');
+				--bg-image-footer: url('/assets/backgrounds/bg-footer-dark-800w.jpg');
+			}
+
+			@media (min-width: 50em) {
+				:root {
+					--bg-scale: 1;
+					--bg-image-main: url('/assets/backgrounds/bg-main-light-1440w.jpg');
+				}
+				:root.theme-dark {
+					--bg-image-main: url('/assets/backgrounds/bg-main-dark-1440w.jpg');
+				}
+
+				:root.loaded {
+					--bg-image-subtle-1: url('/assets/backgrounds/bg-subtle-1-light-1440w.jpg');
+					--bg-image-subtle-2: url('/assets/backgrounds/bg-subtle-2-light-1440w.jpg');
+					--bg-image-footer: url('/assets/backgrounds/bg-footer-light-1440w.jpg');
+				}
+				:root.loaded.theme-dark {
+					--bg-image-subtle-1: url('/assets/backgrounds/bg-subtle-1-dark-1440w.jpg');
+					--bg-image-subtle-2: url('/assets/backgrounds/bg-subtle-2-dark-1440w.jpg');
+					--bg-image-footer: url('/assets/backgrounds/bg-footer-dark-1440w.jpg');
+				}
+			}
+
+			.backgrounds {
+				min-height: 100%;
+				isolation: isolate;
+				background:
+					/*noise*/
+					url('/assets/backgrounds/noise.png') top center/220px repeat,
+					/*footer*/ var(--bg-image-footer) bottom center/var(--bg-gradient-size) no-repeat,
+					/*header1*/ var(--bg-image-main-curves) top center/var(--bg-gradient-size) no-repeat,
+					/*header2*/ var(--bg-image-main) top center/var(--bg-gradient-size) no-repeat,
+					/*base*/ var(--gray-999);
+				background-blend-mode: /*noise*/
+					overlay,
+					/*footer*/ var(--bg-blend-mode),
+					/*header1*/ var(--bg-svg-blend-mode),
+					/*header2*/ normal,
+					/*base*/ normal;
+			}
+			@media (forced-colors: active) {
+				/* Deactivate custom backgrounds for high contrast users. */
+				.backgrounds {
+					background: none;
+					background-blend-mode: none;
+					--bg-gradient-size: none;
+				}
+			}
+		</style>
 	</body>
 </html>

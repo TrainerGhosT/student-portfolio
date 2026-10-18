@@ -1,85 +1,195 @@
-@import 'tailwindcss';
-@import '@fontsource-variable/inter';
-@plugin '@tailwindcss/typography';
+@import './tailwind.css';
 
-/* Modo oscuro por clase (.dark en <html>), controlado por ThemeToggle. */
-@custom-variant dark (&:where(.dark, .dark *));
+@import './tokens.css';
 
-@theme {
-	--font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-
-	/* Color de acento: cambiar aquí para re-tematizar todo el sitio. */
-	--color-brand-50: var(--color-teal-50);
-	--color-brand-100: var(--color-teal-100);
-	--color-brand-200: var(--color-teal-200);
-	--color-brand-300: var(--color-teal-300);
-	--color-brand-400: var(--color-teal-400);
-	--color-brand-500: var(--color-teal-500);
-	--color-brand-600: var(--color-teal-600);
-	--color-brand-700: var(--color-teal-700);
-	--color-brand-800: var(--color-teal-800);
-	--color-brand-900: var(--color-teal-900);
-	--color-brand-950: var(--color-teal-950);
-}
-
+/* ===== Estilos base de la plantilla (en @layer base para que las utilidades de Tailwind puedan sobrescribirlos) ===== */
 @layer base {
-	html {
-		@apply scroll-smooth antialiased;
-		scroll-padding-top: 5rem;
-		color-scheme: light;
+/* Tailwind (preflight) vuelve los SVG elementos de bloque; la plantilla los usa en línea. */
+svg {
+	display: inline;
+}
+
+html,
+body {
+	min-height: 100%;
+	overflow-x: hidden;
+}
+
+body {
+	background-color: var(--gray-999);
+	color: var(--gray-200);
+	font-family: var(--font-body);
+	-webkit-font-smoothing: antialiased;
+	line-height: 1.5;
+}
+
+*,
+*::after,
+*::before {
+	box-sizing: border-box;
+	margin: 0;
+}
+
+img {
+	max-width: 100%;
+	height: auto;
+}
+
+a {
+	color: var(--link-color);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+	line-height: 1.1;
+	font-family: var(--font-brand);
+	font-weight: 600;
+	color: var(--gray-100);
+}
+
+h1 {
+	font-size: var(--text-5xl);
+}
+
+h2 {
+	font-size: var(--text-4xl);
+}
+
+h3 {
+	font-size: var(--text-3xl);
+}
+
+h4 {
+	font-size: var(--text-2xl);
+}
+
+h5 {
+	font-size: var(--text-xl);
+}
+
+/* Utilities */
+
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border-width: 0;
+}
+
+.wrapper {
+	width: 100%;
+	max-width: 83rem;
+	margin-inline: auto;
+	padding-inline: 1.5rem;
+}
+
+.stack {
+	display: flex;
+	flex-direction: column;
+}
+
+.gap-2 {
+	gap: 0.5rem;
+}
+.gap-4 {
+	gap: 1rem;
+}
+.gap-8 {
+	gap: 2rem;
+}
+.gap-10 {
+	gap: 2.5rem;
+}
+.gap-15 {
+	gap: 3.75rem;
+}
+.gap-20 {
+	gap: 5rem;
+}
+.gap-30 {
+	gap: 7.5rem;
+}
+.gap-48 {
+	gap: 12rem;
+}
+
+@media (min-width: 50em) {
+	.lg\:gap-2 {
+		gap: 0.5rem;
 	}
-	html.dark {
-		color-scheme: dark;
+	.lg\:gap-4 {
+		gap: 1rem;
 	}
-	body {
-		@apply bg-white font-sans text-zinc-700 dark:bg-zinc-950 dark:text-zinc-300;
+	.lg\:gap-8 {
+		gap: 2rem;
 	}
-	h1,
-	h2,
-	h3,
-	h4 {
-		@apply font-semibold tracking-tight text-zinc-900 dark:text-zinc-50;
+	.lg\:gap-10 {
+		gap: 2.5rem;
 	}
-	::selection {
-		@apply bg-brand-200 text-zinc-900 dark:bg-brand-800 dark:text-white;
+	.lg\:gap-15 {
+		gap: 3.75rem;
 	}
-	:focus-visible {
-		@apply outline-2 outline-offset-2 outline-brand-500;
+	.lg\:gap-20 {
+		gap: 5rem;
+	}
+	.lg\:gap-30 {
+		gap: 7.5rem;
+	}
+	.lg\:gap-48 {
+		gap: 12rem;
 	}
 }
 
-@layer components {
-	.container-page {
-		@apply mx-auto w-full max-w-5xl px-4 sm:px-6;
-	}
-	.btn {
-		@apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-60;
-	}
-	.btn-primary {
-		@apply bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white;
-	}
-	.btn-secondary {
-		@apply border border-zinc-300 bg-white text-zinc-800 hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-zinc-600 dark:hover:bg-zinc-800;
-	}
-	.btn-danger {
-		@apply border border-red-300 text-red-700 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950;
-	}
-	.card {
-		@apply rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/60;
-	}
-	.chip {
-		@apply inline-flex items-center rounded-md border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:border-zinc-700/80 dark:bg-zinc-800/60 dark:text-zinc-300;
-	}
-	.eyebrow {
-		@apply text-xs font-semibold tracking-widest text-brand-700 uppercase dark:text-brand-400;
-	}
-	.link {
-		@apply font-medium text-brand-700 underline-offset-4 hover:underline dark:text-brand-400;
-	}
-	.field-label {
-		@apply mb-1.5 block text-sm font-medium text-zinc-800 dark:text-zinc-200;
-	}
-	.field {
-		@apply block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500;
-	}
+}
+
+/* ===== Utilidades propias del rediseño ===== */
+.box {
+	border: 1px solid var(--gray-800);
+	border-radius: 1.5rem;
+	background-color: var(--gray-999_40);
+	box-shadow: var(--shadow-sm);
+}
+
+.prose-portfolio > :where(* + *) {
+	margin-top: 1rem;
+}
+.prose-portfolio :where(ul) {
+	padding-inline-start: 1.25rem;
+	list-style: disc;
+}
+.prose-portfolio :where(li + li) {
+	margin-top: 0.4rem;
+}
+.prose-portfolio :where(li)::marker {
+	color: var(--accent-regular);
+}
+.prose-portfolio :where(strong) {
+	color: var(--gray-100);
+}
+.prose-portfolio :where(h2, h3, h4) {
+	margin: 1.75rem 0 0.75rem;
+	font-size: var(--text-xl);
+}
+.prose-portfolio :where(a) {
+	color: var(--link-color);
+	text-underline-offset: 0.2em;
+}
+.prose-portfolio :where(img) {
+	border-radius: 1.5rem;
+	border: 1px solid var(--gray-800);
+	box-shadow: var(--shadow-sm);
+}
+.prose-portfolio :where(code) {
+	font-size: 0.9em;
+	padding: 0.1em 0.35em;
+	border-radius: 0.35rem;
+	background: var(--gray-900);
 }

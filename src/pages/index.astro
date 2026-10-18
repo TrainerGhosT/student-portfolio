@@ -1,12 +1,23 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import CallToAction from '../components/CallToAction.astro';
+import ContactCTA from '../components/ContactCTA.astro';
 import EducationList from '../components/EducationList.astro';
 import ExperienceTimeline from '../components/ExperienceTimeline.astro';
+import Grid from '../components/Grid.astro';
+import Hero from '../components/Hero.astro';
 import Icon from '../components/Icon.astro';
-import ProjectCard from '../components/ProjectCard.astro';
-import Section from '../components/Section.astro';
+import Pill from '../components/Pill.astro';
+import PortfolioPreview from '../components/PortfolioPreview.astro';
 import SkillGroups from '../components/SkillGroups.astro';
-import { getEntries, getSingle, parseSkillGroups, renderMarkdown } from '../lib/content';
+import {
+	computeAge,
+	formatBirthDate,
+	getEntries,
+	getSingle,
+	parseSkillGroups,
+	renderMarkdown,
+} from '../lib/content';
 
 const [profileDoc, skillsDoc, experience, education, projects] = await Promise.all([
 	getSingle('profile'),
@@ -17,162 +28,420 @@ const [profileDoc, skillsDoc, experience, education, projects] = await Promise.a
 ]);
 
 const profile = profileDoc!.data;
-const current = experience.find((e) => !e.data.end);
-const featured = (projects.filter((p) => p.data.featured).length ? projects.filter((p) => p.data.featured) : projects).slice(0, 4);
+const featured = (projects.some((p) => p.data.featured) ? projects.filter((p) => p.data.featured) : projects).slice(0, 4);
 const skills = parseSkillGroups(skillsDoc?.body ?? '');
+
+// La edad se calcula en cada visita (zona horaria de Costa Rica): siempre está al día.
+const display = profile.ageDisplay ?? 'age';
+const age = profile.birthDate ? computeAge(profile.birthDate) : null;
+const birthLine =
+	profile.birthDate && display !== 'none'
+		? display === 'birthdate'
+			? `Fecha de nacimiento: ${formatBirthDate(profile.birthDate)}`
+			: display === 'both'
+				? `${age} años · ${formatBirthDate(profile.birthDate)}`
+				: `${age} años`
+		: null;
+
+const roleIcons = ['code', 'rocket-launch', 'terminal-window', 'pencil-line'] as const;
+const initials = profile.name
+	.split(/\s+/)
+	.map((w) => w[0])
+	.slice(0, 2)
+	.join('')
+	.toUpperCase();
 ---
 
 <BaseLayout>
-	<!-- Hero -->
-	<section class="container-page pt-16 pb-14 sm:pt-24 sm:pb-20">
-		<div class="grid items-start gap-12 lg:grid-cols-[1fr_20rem]">
-			<div>
+	<div class="stack gap-20 lg:gap-48">
+		<div class="wrapper stack gap-8 lg:gap-20">
+			<header class="hero">
+				<Hero title={`Hola, mi nombre es ${profile.name}`} tagline={profile.headline} align="start">
+					<p class="summary">{profile.tagline}</p>
+					{
+						profile.roles && profile.roles.length > 0 && (
+							<div class="roles">
+								{profile.roles.map((role, i) => (
+									<Pill>
+										<Icon icon={roleIcons[i % roleIcons.length]} size="1.33em" /> {role}
+									</Pill>
+								))}
+							</div>
+						)
+					}
+					<div class="personal-info">
+						{
+							birthLine && (
+								<div class="info-item">
+									<Icon icon="calendar" size="1.33em" gradient />
+									<span>{birthLine}</span>
+								</div>
+							)
+						}
+						{
+							profile.location && (
+								<div class="info-item">
+									<Icon icon="map-pin" size="1.33em" gradient />
+									<span>{profile.location}</span>
+								</div>
+							)
+						}
+					</div>
+					<div class="hero-actions">
+						<CallToAction href="/contacto/">
+							Contáctame
+							<Icon icon="paper-plane-tilt" size="1.2em" />
+						</CallToAction>
+						<a class="secondary-action" href="/cv/">
+							<Icon icon="file-text" size="1.2em" /> Ver CV
+						</a>
+					</div>
+				</Hero>
+
 				{
-					profile.availability && (
-						<p class="mb-6 inline-flex items-center gap-2 rounded-full border border-zinc-200 px-3 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
-							<span class="size-1.5 rounded-full bg-brand-500" aria-hidden="true" />
-							{profile.availability}
-						</p>
+					profile.avatar ? (
+						<img alt={`Imagen de ${profile.name}`} width="480" height="620" src={profile.avatar} class="avatar" />
+					) : (
+						<div class="avatar monogram" role="img" aria-label={`Monograma de ${profile.name}`}>
+							<span>{initials}</span>
+						</div>
 					)
 				}
-				<h1 class="text-4xl leading-[1.1] sm:text-5xl">{profile.name}</h1>
-				<p class="mt-3 text-lg font-medium text-brand-700 sm:text-xl dark:text-brand-400">{profile.headline}</p>
-				<p class="mt-6 max-w-2xl text-lg leading-relaxed text-zinc-600 dark:text-zinc-400">{profile.tagline}</p>
-
-				<div class="mt-8 flex flex-wrap gap-3">
-					<a href="/contacto" class="btn btn-primary"><Icon name="mail" size={16} /> Contactarme</a>
-					<a href="/cv" class="btn btn-secondary"><Icon name="file" size={16} /> Ver CV</a>
-					<a href="/cv.pdf?descargar" class="btn btn-secondary" download="Dylan_Montoya_CV.pdf">
-						<Icon name="download" size={16} /> Descargar
-					</a>
-				</div>
-			</div>
-
-			<aside class="card p-5 text-sm" aria-label="Resumen">
-				<dl class="space-y-4">
-					{
-						current && (
-							<div>
-								<dt class="text-xs text-zinc-500 dark:text-zinc-400">Actualmente</dt>
-								<dd class="mt-0.5 font-medium text-zinc-900 dark:text-zinc-100">{current.data.role}</dd>
-							</div>
-						)
-					}
-					{
-						profile.location && (
-							<div>
-								<dt class="text-xs text-zinc-500 dark:text-zinc-400">Ubicación</dt>
-								<dd class="mt-0.5 flex items-center gap-1.5 font-medium text-zinc-900 dark:text-zinc-100">
-									<Icon name="map-pin" size={14} class="text-zinc-400" />
-									{profile.location}
-								</dd>
-							</div>
-						)
-					}
-					{
-						profile.focus && profile.focus.length > 0 && (
-							<div>
-								<dt class="text-xs text-zinc-500 dark:text-zinc-400">Enfoque</dt>
-								<dd class="mt-1.5 flex flex-wrap gap-1.5">
-									{profile.focus.map((f) => (
-										<span class="chip">{f}</span>
-									))}
-								</dd>
-							</div>
-						)
-					}
-				</dl>
-				<div class="mt-5 flex gap-1 border-t border-zinc-200 pt-4 dark:border-zinc-800">
-					{
-						profile.linkedin && (
-							<a href={profile.linkedin} target="_blank" rel="noopener noreferrer" class="btn btn-secondary flex-1 !px-2 !py-2">
-								<Icon name="linkedin" size={16} /> LinkedIn
-							</a>
-						)
-					}
-					{
-						profile.github && (
-							<a href={profile.github} target="_blank" rel="noopener noreferrer" class="btn btn-secondary flex-1 !px-2 !py-2">
-								<Icon name="github" size={16} /> GitHub
-							</a>
-						)
-					}
-				</div>
-			</aside>
+			</header>
 		</div>
-	</section>
 
-	<div class="border-t border-zinc-200 dark:border-zinc-800"></div>
+		<main class="wrapper stack gap-20 lg:gap-48">
+			<!-- Sobre mí -->
+			<section id="sobre-mi" class="section with-background bg-variant">
+				<header class="section-header stack gap-2 lg:gap-4">
+					<h3>Sobre mí</h3>
+					<p>{profile.availability}</p>
+				</header>
+				<div class="gallery about box">
+					<div class="prose-portfolio" set:html={renderMarkdown(profileDoc!.body)} />
+				</div>
+			</section>
 
-	<!-- Sobre mí -->
-	<Section id="sobre-mi" eyebrow="Sobre mí" title="Software útil, procesos más simples">
-		<div
-			class="prose prose-zinc dark:prose-invert prose-p:leading-relaxed max-w-3xl text-[1.05rem]"
-			set:html={renderMarkdown(profileDoc!.body)}
-		/>
-	</Section>
+			<!-- Experiencia -->
+			{
+				experience.length > 0 && (
+					<section id="experiencia" class="section">
+						<header class="section-header stack gap-2 lg:gap-4">
+							<h3>Experiencia</h3>
+							<p>Dónde he trabajado y qué he construido.</p>
+						</header>
+						<div class="gallery">
+							<ExperienceTimeline items={experience} />
+						</div>
+					</section>
+				)
+			}
 
-	<!-- Experiencia -->
-	{
-		experience.length > 0 && (
-			<Section id="experiencia" eyebrow="Trayectoria" title="Experiencia" class="border-t border-zinc-200 dark:border-zinc-800">
-				<ExperienceTimeline items={experience} />
-			</Section>
-		)
-	}
+			<!-- Proyectos -->
+			{
+				featured.length > 0 && (
+					<section id="proyectos" class="section with-background with-cta">
+						<header class="section-header stack gap-2 lg:gap-4">
+							<h3>Proyectos destacados</h3>
+							<p>Una selección de proyectos académicos y personales.</p>
+						</header>
 
-	<!-- Proyectos -->
-	{
-		featured.length > 0 && (
-			<Section
-				id="proyectos"
-				eyebrow="Trabajo seleccionado"
-				title="Proyectos"
-				description="Una selección de proyectos académicos y personales."
-				class="border-t border-zinc-200 dark:border-zinc-800"
-			>
-				<a slot="action" href="/proyectos" class="link inline-flex shrink-0 items-center gap-1 text-sm">
-					Ver todos <Icon name="arrow-right" size={14} />
-				</a>
-				<ul class="grid gap-5 sm:grid-cols-2">
-					{featured.map((p) => (
-						<li>
-							<ProjectCard project={p} />
-						</li>
-					))}
-				</ul>
-			</Section>
-		)
-	}
+						<div class="gallery">
+							<Grid variant="offset">
+								{featured.map((project) => (
+									<li>
+										<PortfolioPreview project={project} />
+									</li>
+								))}
+							</Grid>
+						</div>
 
-	<!-- Educación -->
-	{
-		education.length > 0 && (
-			<Section id="educacion" eyebrow="Formación" title="Educación y certificaciones" class="border-t border-zinc-200 dark:border-zinc-800">
-				<EducationList items={education} />
-			</Section>
-		)
-	}
+						<div class="cta">
+							<CallToAction href="/proyectos/">
+								Ver todos
+								<Icon icon="arrow-right" size="1.2em" />
+							</CallToAction>
+						</div>
+					</section>
+				)
+			}
 
-	<!-- Habilidades -->
-	{
-		skills.length > 0 && (
-			<Section id="habilidades" eyebrow="Herramientas" title="Habilidades" class="border-t border-zinc-200 dark:border-zinc-800">
-				<SkillGroups groups={skills} />
-			</Section>
-		)
-	}
+			<!-- Educación -->
+			{
+				education.length > 0 && (
+					<section id="educacion" class="section">
+						<header class="section-header stack gap-2 lg:gap-4">
+							<h3>Educación</h3>
+							<p>Formación académica y certificaciones.</p>
+						</header>
+						<div class="gallery">
+							<EducationList items={education} />
+						</div>
+					</section>
+				)
+			}
 
-	<!-- Contacto -->
-	<section class="container-page">
-		<div class="card flex flex-col items-start gap-6 p-8 sm:flex-row sm:items-center sm:justify-between sm:p-10">
-			<div>
-				<h2 class="text-2xl">¿Conversamos?</h2>
-				<p class="mt-2 max-w-xl text-zinc-600 dark:text-zinc-400">
-					Si tienes una oportunidad, un proyecto o una idea en la que pueda aportar, escríbeme.
-				</p>
-			</div>
-			<a href="/contacto" class="btn btn-primary shrink-0">Ir a contacto <Icon name="arrow-right" size={16} /></a>
-		</div>
-	</section>
+			<!-- Habilidades -->
+			{
+				skills.length > 0 && (
+					<section id="habilidades" class="section with-background">
+						<header class="section-header stack gap-2 lg:gap-4">
+							<h3>Habilidades</h3>
+							<p>Tecnologías con las que trabajo y cómo trabajo.</p>
+						</header>
+						<div class="gallery">
+							<SkillGroups groups={skills} />
+						</div>
+					</section>
+				)
+			}
+		</main>
+
+		<ContactCTA />
+	</div>
 </BaseLayout>
+
+<style>
+
+	
+  .hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .roles {
+    display: none;
+  }
+  .personal-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--gray-300);
+  }
+
+  .hero .avatar {
+    aspect-ratio: 5 / 4;
+    object-fit: cover;
+    object-position: top;
+    border-radius: 1.5rem;
+    box-shadow: var(--shadow-md);
+  }
+
+  @media (min-width: 50em) {
+    .hero {
+      display: grid;
+      grid-template-columns: 6fr 4fr;
+      padding-inline: 2.5rem;
+      gap: 3.75rem;
+    }
+
+    .roles {
+      margin-top: 0.5rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .hero .avatar {
+      aspect-ratio: 3 / 4;
+      border-radius: 4.5rem;
+      object-fit: cover;
+    }
+    .personal-info {
+      margin-top: 1.5rem;
+    }
+  }
+
+  /* ====================================================== */
+
+  .section {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .with-background {
+    position: relative;
+  }
+
+  .with-background::before {
+    --hero-bg: var(--bg-image-subtle-2);
+
+    content: "";
+    position: absolute;
+    pointer-events: none;
+    left: 50%;
+    width: 100vw;
+    aspect-ratio: calc(2.25 / var(--bg-scale));
+    top: 0;
+    transform: translateY(-75%) translateX(-50%);
+    background:
+      url("/assets/backgrounds/noise.png") top center/220px repeat,
+      var(--hero-bg) center center / var(--bg-gradient-size) no-repeat,
+      var(--gray-999);
+    background-blend-mode: overlay, normal, normal, normal;
+    mix-blend-mode: var(--bg-blend-mode);
+    z-index: -1;
+  }
+
+  .with-background.bg-variant::before {
+    --hero-bg: var(--bg-image-subtle-1);
+  }
+
+  .section-header {
+    justify-self: center;
+    text-align: center;
+    max-width: 50ch;
+    font-size: var(--text-md);
+    color: var(--gray-300);
+  }
+
+  .section-header h3 {
+    font-size: var(--text-2xl);
+  }
+
+  @media (min-width: 50em) {
+    .section {
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-areas: "header header header header" "gallery gallery gallery gallery";
+      gap: 5rem;
+    }
+
+    .section.with-cta {
+      grid-template-areas: "header header header cta" "gallery gallery gallery gallery";
+    }
+
+    .section-header {
+      grid-area: header;
+      font-size: var(--text-lg);
+    }
+
+    .section-header h3 {
+      font-size: var(--text-4xl);
+    }
+
+    .with-cta .section-header {
+      justify-self: flex-start;
+      text-align: left;
+    }
+
+    .gallery {
+      grid-area: gallery;
+    }
+
+    .cta {
+      grid-area: cta;
+    }
+  }
+
+  /* ====================================================== */
+
+  .mention-card {
+    display: flex;
+    height: 7rem;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border: 1px solid var(--gray-800);
+    border-radius: 1.5rem;
+    color: var(--gray-300);
+    background: var(--gradient-subtle);
+    box-shadow: var(--shadow-sm);
+  }
+
+  @media (min-width: 50em) {
+    .mention-card {
+      border-radius: 1.5rem;
+      height: 9.5rem;
+    }
+  }
+
+	/* ===== Agregados del rediseño ===== */
+	.summary {
+		max-width: 46ch;
+		font-size: var(--text-md);
+		color: var(--gray-300);
+	}
+
+	@media (min-width: 50em) {
+		.summary {
+			font-size: var(--text-lg);
+		}
+	}
+
+	.hero-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1rem;
+		margin-top: 1.5rem;
+		align-items: center;
+	}
+
+	.secondary-action {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.6em;
+		padding: 0.56em 1.6em;
+		font-size: var(--text-lg);
+		line-height: 1.1;
+		color: var(--gray-200);
+		text-decoration: none;
+		border-radius: 999rem;
+		background: radial-gradient(var(--gray-900), var(--gray-800) 150%);
+		box-shadow: var(--shadow-md);
+		border: 1px solid var(--gray-800);
+		transition: color var(--theme-transition);
+	}
+
+	.secondary-action:hover,
+	.secondary-action:focus {
+		color: var(--gray-0);
+	}
+
+	.monogram {
+		display: grid;
+		place-items: center;
+		width: 100%;
+		max-width: 480px;
+		background:
+			url('/assets/backgrounds/noise.png') top center/220px repeat,
+			var(--gradient-accent);
+		background-blend-mode: overlay, normal;
+		color: #fff;
+		font-family: var(--font-brand);
+		font-weight: 600;
+		font-size: clamp(5rem, 18vw, 9rem);
+		letter-spacing: -0.04em;
+	}
+
+	.monogram span {
+		text-shadow: 0 10px 40px rgba(28, 0, 86, 0.45);
+	}
+
+	.about {
+		padding: 1.5rem;
+		font-size: var(--text-md);
+		color: var(--gray-200);
+	}
+
+	.box {
+		border: 1px solid var(--gray-800);
+		border-radius: 1.5rem;
+		background-color: var(--gray-999_40);
+		box-shadow: var(--shadow-sm);
+	}
+
+	@media (min-width: 50em) {
+		.about {
+			padding: 2.5rem 3rem;
+			font-size: var(--text-lg);
+		}
+	}
+</style>
