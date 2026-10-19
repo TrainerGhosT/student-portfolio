@@ -1,8 +1,9 @@
 ---
-import { env } from 'cloudflare:workers';
+import { turnstileSiteKey } from '../lib/mail';
 import Icon from './UiIcon.astro';
 
-const siteKey = env.TURNSTILE_SITE_KEY;
+// En localhost usa la clave de prueba de Cloudflare; en dmontoya.dev, la real.
+const siteKey = turnstileSiteKey(Astro.url);
 const sent = Astro.url.searchParams.has('enviado');
 const error = Astro.url.searchParams.get('error');
 ---

@@ -1,8 +1,7 @@
 # Copiar a .dev.vars (no se sube a git) para desarrollo local.
 RESEND_API_KEY=re_xxxxxxxxxxxxxxxxx
-# En local se usan las claves de prueba de Turnstile (siempre pasan):
-TURNSTILE_SITE_KEY=1x00000000000000000000AA
-TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+# Turnstile: en localhost el código usa solo las claves de prueba de Cloudflare.
+# En producción: pnpm wrangler secret put TURNSTILE_SECRET_KEY
 
 # WhatsApp (opcional).
 # Normalmente se configura desde /admin/whatsapp; estos valores son el respaldo.

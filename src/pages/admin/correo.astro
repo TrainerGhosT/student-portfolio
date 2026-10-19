@@ -1,0 +1,70 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import Icon from '../../components/UiIcon.astro';
+import { getEmailSettings } from '../../lib/mail';
+
+const s = await getEmailSettings();
+const fmt = (iso?: string) => (iso ? new Date(iso).toLocaleString('es-CR', { timeZone: 'America/Costa_Rica' }) : '—');
+---
+
+<AdminLayout title="Correo">
+	<h1 class="text-2xl">Correo</h1>
+	<p class="mt-1 text-sm text-zinc-500">A dónde llegan los mensajes del formulario y prueba de envío con Resend.</p>
+
+	<div class="mt-6 grid gap-4 sm:grid-cols-3">
+		<div class="card p-5">
+			<p class="text-xs text-zinc-500">API key de Resend</p>
+			<p class="mt-1 font-medium text-zinc-900 dark:text-zinc-100">{s.apiKeyConfigured ? 'Configurada' : 'Falta RESEND_API_KEY'}</p>
+		</div>
+		<div class="card p-5">
+			<p class="text-xs text-zinc-500">Remitente</p>
+			<p class="mt-1 truncate font-medium text-zinc-900 dark:text-zinc-100" title={s.fromAddress}>{s.fromAddress || 'Falta CONTACT_FROM'}</p>
+		</div>
+		<div class="card p-5">
+			<p class="text-xs text-zinc-500">Última prueba</p>
+			<p class:list={['mt-1 font-medium', s.lastTest ? (s.lastTest.ok ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400') : 'text-zinc-900 dark:text-zinc-100']}>
+				{s.lastTest ? (s.lastTest.ok ? 'Enviado' : 'Falló') : 'Sin pruebas'}
+			</p>
+			{s.lastTest && <p class="mt-1 text-xs text-zinc-500">{fmt(s.lastTest.at)} · {s.lastTest.to}</p>}
+		</div>
+	</div>
+
+	{
+		s.lastTest && !s.lastTest.ok && (
+			<p class="card mt-4 p-4 font-mono text-xs break-words text-red-700 dark:text-red-400">{s.lastTest.detail}</p>
+		)
+	}
+
+	<form method="post" action="/api/admin/correo" class="mt-6 space-y-6">
+		<input type="hidden" name="_action" value="save" />
+		<div class="card grid gap-5 p-5 sm:grid-cols-2">
+			<div class="sm:col-span-2">
+				<label class="field-label" for="to">Destinatarios</label>
+				<input id="to" name="to" class="field" value={s.to.join(', ')} placeholder="contacto@dmontoya.dev" />
+				<p class="mt-1.5 text-xs text-zinc-500">
+					Separados por comas. <code>contacto@dmontoya.dev</code> reenvía a tu Gmail mediante Cloudflare Email Routing.
+				</p>
+			</div>
+			<div>
+				<label class="field-label" for="cc">Copia (opcional)</label>
+				<input id="cc" name="cc" class="field" value={s.cc.join(', ')} />
+			</div>
+			<div>
+				<label class="field-label" for="fromName">Nombre del remitente</label>
+				<input id="fromName" name="fromName" class="field" value={s.fromName} />
+				<p class="mt-1.5 text-xs text-zinc-500">Se envía desde {s.fromAddress || '—'} (dominio verificado en Resend).</p>
+			</div>
+		</div>
+		<button class="btn btn-primary"><Icon name="check" size={16} /> Guardar</button>
+	</form>
+
+	<form method="post" action="/api/admin/correo" class="card mt-6 flex flex-col gap-3 p-5 sm:flex-row sm:items-end">
+		<input type="hidden" name="_action" value="test" />
+		<div class="flex-1">
+			<label class="field-label" for="testTo">Enviar un correo de prueba a</label>
+			<input id="testTo" name="testTo" type="email" class="field" placeholder={s.to.join(', ') || 'tu@correo.com'} />
+			<p class="mt-1.5 text-xs text-zinc-500">Vacío = a los destinatarios configurados.</p>
+		</div>
+		<button class="btn btn-secondary shrink-0"><Icon name="send" size={16} /> Enviar prueba</button>
+	</form>
+</AdminLayout>

@@ -72,7 +72,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 		if (data[k as keyof typeof data].length > max) return reply(false, 'Alguno de los campos es demasiado largo.');
 	}
 
-	const human = await verifyTurnstile(get('cf-turnstile-response') || null, ip);
+	const human = await verifyTurnstile(get('cf-turnstile-response') || null, ip, new URL(request.url));
 	if (!human) return reply(false, 'No pudimos verificar que no eres un robot. Recarga la página e intenta de nuevo.');
 
 	const msg: ContactMessage = {
