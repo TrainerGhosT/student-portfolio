@@ -202,6 +202,13 @@ Entra a `https://dmontoya.dev/admin`:
 
 Los cambios se ven al instante (hasta ~1 min en otras regiones por la caché en memoria).
 
+### Íconos de tecnologías
+
+*Admin → Tecnologías* muestra todas las etiquetas usadas en proyectos, experiencia y habilidades con su ícono.
+«Cambiar ícono» abre un buscador con los logos de [svgl](https://svgl.app) (con versión clara y oscura cuando existe)
+o los íconos de [Lucide](https://lucide.dev/icons). El SVG elegido se guarda en R2, así el sitio no depende de esos servicios.
+El catálogo inicial vive en `src/seed/tech-icons.json` (se regenera con `node scripts/build-tech-seed.mjs`).
+
 ## Costos
 
 Todo cabe en los planes gratuitos (Workers, R2, Access, Turnstile, Email Routing, Resend 3 000 correos/mes).

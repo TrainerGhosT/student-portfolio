@@ -1,6 +1,7 @@
 ---
 import type { CollectionDef, CollectionName } from '../lib/schema';
 import Icon from './UiIcon.astro';
+import { getTechCatalog, svgDataUri } from '../lib/tech';
 
 interface Props {
 	collection: CollectionName;
@@ -11,6 +12,12 @@ interface Props {
 	isNew?: boolean;
 }
 const { collection, def, slug = '', data, body, isNew = false } = Astro.props;
+
+// Sugerencias para los campos de tecnologías (catálogo de /admin/tecnologias).
+const hasTags = def.fields.some((f) => f.type === 'tags' && f.name !== 'focus');
+const techs = hasTags
+	? Object.values(await getTechCatalog()).sort((a, b) => a.name.localeCompare(b.name, 'es'))
+	: [];
 
 const valueOf = (name: string, type: string) => {
 	const v = data[name];
@@ -81,6 +88,24 @@ const valueOf = (name: string, type: string) => {
 										/>
 									)}
 									{f.help && <p class="mt-1.5 text-xs text-zinc-500">{f.help}</p>}
+									{f.type === 'tags' && f.name !== 'focus' && techs.length > 0 && (
+										<details class="mt-2">
+											<summary class="cursor-pointer text-xs text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200">
+												Agregar desde el catálogo de tecnologías
+											</summary>
+											<div class="mt-2 flex flex-wrap gap-1.5" data-tag-suggest={id}>
+												{techs.map((t) => (
+													<button type="button" class="chip gap-1.5 hover:border-violet-500" data-tag-value={t.name}>
+														{t.source === 'svgl' && t.light && <img src={svgDataUri(t.light)} alt="" class:list={['size-3.5', t.dark && 'dark:hidden']} />}
+														{t.source === 'svgl' && t.dark && <img src={svgDataUri(t.dark)} alt="" class="hidden size-3.5 dark:block" />}
+														{t.source === 'lucide' && t.light && <span class="size-3.5 [&>svg]:size-full" set:html={t.light} />}
+														{t.name}
+													</button>
+												))}
+											</div>
+											<a href="/admin/tecnologias" class="link mt-2 inline-block text-xs">Administrar íconos</a>
+										</details>
+									)}
 								</>
 							)}
 						</div>
@@ -121,6 +146,19 @@ const valueOf = (name: string, type: string) => {
 }
 
 <script>
+	// Agregar una tecnología del catálogo al campo de etiquetas (sin duplicados).
+	document.querySelectorAll<HTMLElement>('[data-tag-suggest]').forEach((box) => {
+		const input = document.getElementById(box.dataset.tagSuggest!) as HTMLInputElement;
+		box.querySelectorAll<HTMLButtonElement>('[data-tag-value]').forEach((btn) =>
+			btn.addEventListener('click', () => {
+				const tags = input.value.split(',').map((t) => t.trim()).filter(Boolean);
+				const value = btn.dataset.tagValue!;
+				if (!tags.some((t) => t.toLowerCase() === value.toLowerCase())) tags.push(value);
+				input.value = tags.join(', ');
+			}),
+		);
+	});
+
 	// Pestañas Escribir / Vista previa
 	const body = document.querySelector<HTMLTextAreaElement>('[data-body]')!;
 	const preview = document.querySelector<HTMLElement>('[data-preview]')!;

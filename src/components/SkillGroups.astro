@@ -1,14 +1,15 @@
 ---
 import type { SkillGroup } from '../lib/content';
-import { techIcon } from '../lib/tech';
+import { getTechCatalog, techKey } from '../lib/tech';
 import TechPill from './TechPill.astro';
 
 interface Props {
 	groups: SkillGroup[];
 }
 const { groups } = Astro.props;
-// Los grupos sin tecnologías reconocidas (habilidades blandas, fortalezas, idiomas) se muestran como texto.
-const isTech = (g: SkillGroup) => g.items.some((i) => techIcon(i));
+// Los grupos sin tecnologías del catálogo (habilidades blandas, fortalezas, idiomas) se muestran como texto.
+const catalog = await getTechCatalog();
+const isTech = (g: SkillGroup) => g.items.some((i) => techKey(i) in catalog);
 const tech = groups.filter(isTech);
 const soft = groups.filter((g) => !isTech(g));
 ---

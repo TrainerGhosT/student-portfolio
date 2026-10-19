@@ -1,22 +1,27 @@
 ---
-import { brandColor, techIcon } from '../lib/tech';
+import { getTechEntry, svgDataUri } from '../lib/tech';
 
 interface Props {
 	name: string;
 	size?: string;
 }
 const { name, size = '1em' } = Astro.props;
-const t = techIcon(name);
-
-let svg = '';
-if (t?.kind === 'brand') {
-	svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${brandColor(t.icon.hex)}" aria-hidden="true"><path d="${t.icon.path}"/></svg>`;
-} else if (t?.kind === 'generic') {
-	svg = t.svg.replace(/\s*class="[^"]*"/, '').replace('<svg', '<svg aria-hidden="true"');
-}
+const entry = await getTechEntry(name);
 ---
 
-{svg && <span class="tech-icon" style={{ '--size': size }} set:html={svg} />}
+{
+	entry?.source === 'svgl' && entry.light && (
+		<span class="tech-icon" style={{ '--size': size }} aria-hidden="true">
+			<img src={svgDataUri(entry.light)} alt="" class:list={[entry.dark && 'only-light']} width="16" height="16" />
+			{entry.dark && <img src={svgDataUri(entry.dark)} alt="" class="only-dark" width="16" height="16" />}
+		</span>
+	)
+}
+{
+	entry?.source === 'lucide' && entry.light && (
+		<span class="tech-icon lucide" style={{ '--size': size }} aria-hidden="true" set:html={entry.light} />
+	)
+}
 
 <style>
 	.tech-icon {
@@ -25,8 +30,28 @@ if (t?.kind === 'brand') {
 		width: var(--size);
 		height: var(--size);
 	}
+
+	.tech-icon img,
 	.tech-icon :global(svg) {
+		display: block;
 		width: 100%;
 		height: 100%;
+		object-fit: contain;
+	}
+
+	.lucide {
+		color: var(--link-color);
+	}
+
+	.only-dark {
+		display: none !important;
+	}
+
+	:global(.theme-dark) .only-dark {
+		display: block !important;
+	}
+
+	:global(.theme-dark) .only-light {
+		display: none !important;
 	}
 </style>
