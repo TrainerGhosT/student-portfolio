@@ -1,9 +1,11 @@
 # Copiar a .dev.vars (no se sube a git) para desarrollo local.
 RESEND_API_KEY=re_xxxxxxxxxxxxxxxxx
-# Clave secreta de prueba de Turnstile (siempre pasa):
+# En local se usan las claves de prueba de Turnstile (siempre pasan):
+TURNSTILE_SITE_KEY=1x00000000000000000000AA
 TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
 
-# WhatsApp (opcional). Proveedor por defecto: CallMeBot (gratis, a tu propio número).
-# WHATSAPP_PROVIDER=callmebot
+# WhatsApp (opcional).
+# Normalmente se configura desde /admin/whatsapp; estos valores son el respaldo.
+# WHATSAPP_PROVIDER=auto
 WHATSAPP_PHONE=+50600000000
 CALLMEBOT_APIKEY=

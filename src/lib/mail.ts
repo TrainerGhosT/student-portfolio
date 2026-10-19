@@ -98,3 +98,22 @@ export async function verifyTurnstile(token: string | null, ip: string | null): 
 		return false;
 	}
 }
+
+/** Aviso interno (p. ej. "CallMeBot ya tiene cupos") a tu propio correo. */
+export async function sendNotificationEmail(subject: string, text: string): Promise<'sent' | 'failed' | 'skipped'> {
+	if (!env.RESEND_API_KEY) return 'skipped';
+	const to = [env.CONTACT_TO, env.CONTACT_CC]
+		.flatMap((v) => (v || '').split(','))
+		.map((v) => v.trim())
+		.filter(Boolean);
+	try {
+		const res = await fetch('https://api.resend.com/emails', {
+			method: 'POST',
+			headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+			body: JSON.stringify({ from: env.CONTACT_FROM, to, subject: `[Portafolio] ${subject}`, text }),
+		});
+		return res.ok ? 'sent' : 'failed';
+	} catch {
+		return 'failed';
+	}
+}

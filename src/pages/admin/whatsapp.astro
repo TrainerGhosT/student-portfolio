@@ -1,0 +1,116 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import Icon from '../../components/UiIcon.astro';
+import { activeProvider, callmebotReady, getWhatsAppSettings, metaReady } from '../../lib/settings';
+
+const s = await getWhatsAppSettings();
+const provider = activeProvider(s);
+const providerLabel = provider === 'callmebot' ? 'CallMeBot' : provider === 'meta' ? 'WhatsApp Cloud API (Meta)' : 'Ninguno';
+const st = s.callmebotStatus;
+const fmt = (iso?: string) => (iso ? new Date(iso).toLocaleString('es-CR', { timeZone: 'America/Costa_Rica' }) : '—');
+---
+
+<AdminLayout title="WhatsApp">
+	<h1 class="text-2xl">WhatsApp</h1>
+	<p class="mt-1 text-sm text-zinc-500">Cómo te llegan a WhatsApp los mensajes del formulario. Nada de esto es visible para los visitantes.</p>
+
+	<div class="mt-6 grid gap-4 sm:grid-cols-3">
+		<div class="card p-5">
+			<p class="text-xs text-zinc-500">Proveedor en uso</p>
+			<p class="mt-1 font-medium text-zinc-900 dark:text-zinc-100">{providerLabel}</p>
+		</div>
+		<div class="card p-5">
+			<p class="text-xs text-zinc-500">CallMeBot</p>
+			<p class="mt-1 font-medium text-zinc-900 dark:text-zinc-100">
+				{callmebotReady(s) ? 'Activo' : st?.available ? 'Con cupos: falta activar' : 'Sin cupos todavía'}
+			</p>
+			<p class="mt-1 text-xs text-zinc-500">Última revisión: {fmt(st?.checkedAt)}</p>
+		</div>
+		<div class="card p-5">
+			<p class="text-xs text-zinc-500">WhatsApp Cloud API</p>
+			<p class="mt-1 font-medium text-zinc-900 dark:text-zinc-100">{metaReady(s) ? 'Configurado' : 'Sin configurar'}</p>
+		</div>
+	</div>
+
+	{
+		!callmebotReady(s) && (
+			<div class="card mt-4 p-5 text-sm">
+				{st?.available ? (
+					<p>
+						<strong>CallMeBot tiene cupos.</strong> Agrega a tus contactos el número <strong>{st.botNumber}</strong>, envíale
+						por WhatsApp <code>I allow callmebot to send me messages</code> y pega abajo la API key que te responda.
+					</p>
+				) : (
+					<p>
+						CallMeBot no está aceptando números por ahora. El sitio lo revisa solo todos los días y te avisa por correo
+						cuando haya cupos. Mientras tanto, el modo «Automático» usa WhatsApp Cloud API si está configurado.
+					</p>
+				)}
+				<form method="post" action="/api/admin/whatsapp" class="mt-3">
+					<input type="hidden" name="_action" value="check" />
+					<button class="btn btn-secondary"><Icon name="eye" size={16} /> Revisar CallMeBot ahora</button>
+				</form>
+			</div>
+		)
+	}
+
+	<form method="post" action="/api/admin/whatsapp" class="mt-6 space-y-6">
+		<input type="hidden" name="_action" value="save" />
+
+		<div class="card grid gap-5 p-5 sm:grid-cols-2">
+			<div>
+				<label class="field-label" for="mode">Modo</label>
+				<select id="mode" name="mode" class="field">
+					<option value="auto" selected={s.mode === 'auto'}>Automático (CallMeBot si está activo; si no, Meta)</option>
+					<option value="callmebot" selected={s.mode === 'callmebot'}>Solo CallMeBot</option>
+					<option value="meta" selected={s.mode === 'meta'}>Solo WhatsApp Cloud API</option>
+					<option value="off" selected={s.mode === 'off'}>Desactivado</option>
+				</select>
+			</div>
+			<div>
+				<label class="field-label" for="phone">Tu número de WhatsApp (destino)</label>
+				<input id="phone" name="phone" class="field" value={s.phone ?? ''} placeholder="+50686861329" />
+				<p class="mt-1.5 text-xs text-zinc-500">No se muestra en el sitio.</p>
+			</div>
+		</div>
+
+		<fieldset class="card space-y-4 p-5">
+			<legend class="px-1 text-sm font-semibold text-zinc-900 dark:text-zinc-100">CallMeBot</legend>
+			<div>
+				<label class="field-label" for="callmebotApiKey">API key</label>
+				<input id="callmebotApiKey" name="callmebotApiKey" type="password" autocomplete="off" class="field font-mono" placeholder={s.callmebotApiKey ? '•••••• (guardada; deja vacío para conservarla)' : 'Pega aquí la clave que te envía el bot'} />
+				{s.callmebotApiKey && <label class="mt-2 flex items-center gap-2 text-xs text-zinc-500"><input type="checkbox" name="clear_callmebotApiKey" /> Borrar la clave guardada</label>}
+			</div>
+		</fieldset>
+
+		<fieldset class="card grid gap-4 p-5 sm:grid-cols-2">
+			<legend class="px-1 text-sm font-semibold text-zinc-900 dark:text-zinc-100">WhatsApp Cloud API (Meta)</legend>
+			<div class="sm:col-span-2">
+				<label class="field-label" for="metaToken">Token de acceso</label>
+				<input id="metaToken" name="metaToken" type="password" autocomplete="off" class="field font-mono" placeholder={s.meta?.token ? '•••••• (guardado; deja vacío para conservarlo)' : 'Token permanente de un usuario del sistema'} />
+				{s.meta?.token && <label class="mt-2 flex items-center gap-2 text-xs text-zinc-500"><input type="checkbox" name="clear_metaToken" /> Borrar el token guardado</label>}
+			</div>
+			<div>
+				<label class="field-label" for="metaPhoneNumberId">Phone number ID (número emisor)</label>
+				<input id="metaPhoneNumberId" name="metaPhoneNumberId" class="field font-mono" value={s.meta?.phoneNumberId ?? ''} />
+			</div>
+			<div>
+				<label class="field-label" for="metaTemplate">Nombre de la plantilla</label>
+				<input id="metaTemplate" name="metaTemplate" class="field font-mono" value={s.meta?.template ?? ''} placeholder="nuevo_mensaje_portafolio" />
+			</div>
+			<div>
+				<label class="field-label" for="metaLang">Idioma de la plantilla</label>
+				<input id="metaLang" name="metaLang" class="field font-mono" value={s.meta?.lang ?? 'es'} />
+			</div>
+		</fieldset>
+
+		<div class="flex flex-wrap gap-3">
+			<button class="btn btn-primary"><Icon name="check" size={16} /> Guardar</button>
+		</div>
+	</form>
+
+	<form method="post" action="/api/admin/whatsapp" class="mt-4">
+		<input type="hidden" name="_action" value="test" />
+		<button class="btn btn-secondary"><Icon name="send" size={16} /> Enviarme un mensaje de prueba</button>
+	</form>
+</AdminLayout>

@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "dylan-portfolio",
-  "main": "@astrojs/cloudflare/entrypoints/server",
+  "main": "./src/worker.ts",
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat"],
   "observability": { "enabled": true },
@@ -10,6 +10,9 @@
   "r2_buckets": [
     { "binding": "CONTENT", "bucket_name": "portfolio-content" }
   ],
+
+  // Cron diario (8:00 a. m. de Costa Rica): revisa si CallMeBot volvió a tener cupos.
+  "triggers": { "crons": ["0 14 * * *"] },
 
   // Límite de envíos del formulario de contacto: 3 por minuto por IP.
   "ratelimits": [
@@ -24,7 +27,7 @@
     "CONTACT_FROM": "Portafolio Dylan Montoya <notificaciones@dmontoya.dev>",
     "CONTACT_TO": "contacto@dmontoya.dev",
     "CONTACT_CC": "",
-    "TURNSTILE_SITE_KEY": "1x00000000000000000000AA"
+    "TURNSTILE_SITE_KEY": "0x4AAAAAAFax39IV6SqwhsNF"
   },
 
   // Dominio propio (la zona dmontoya.dev debe estar en la misma cuenta de Cloudflare).
