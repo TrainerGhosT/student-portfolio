@@ -148,4 +148,58 @@ const isActive = (href: string) => !href.includes('#') && (path === href || path
 	document.querySelectorAll('.site-header details nav a').forEach((a) =>
 		a.addEventListener('click', () => a.closest('details')?.removeAttribute('open')),
 	);
+
+	/*
+	 * Enlaces a secciones del inicio (/#experiencia, /#educacion…) sin dejar «#» en la URL.
+	 * Los href conservan el «#» para que funcionen sin JavaScript; aquí se intercepta el clic,
+	 * se hace el scroll suave y la dirección queda limpia (dmontoya.dev/).
+	 */
+	const SCROLL_KEY = 'scroll-to-section';
+	const isHome = location.pathname === '/';
+
+	const scrollToSection = (id: string, smooth = true) => {
+		const target = document.getElementById(id);
+		if (!target) return false;
+		target.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
+		return true;
+	};
+
+	const cleanUrl = () => {
+		if (location.hash) history.replaceState(history.state, '', location.pathname + location.search);
+	};
+
+	document.querySelectorAll<HTMLAnchorElement>('a[href^="/#"]').forEach((a) =>
+		a.addEventListener('click', (e) => {
+			if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; // abrir en otra pestaña: comportamiento normal
+			const id = a.getAttribute('href')!.slice(2);
+			if (isHome) {
+				if (scrollToSection(id)) e.preventDefault();
+				return;
+			}
+			// Desde otra página: ir al inicio sin «#» y hacer el scroll al cargar.
+			try {
+				sessionStorage.setItem(SCROLL_KEY, id);
+				e.preventDefault();
+				location.href = '/';
+			} catch {
+				/* sin sessionStorage: se usa el #, que igual se limpia al llegar */
+			}
+		}),
+	);
+
+	if (isHome) {
+		let pending: string | null = null;
+		try {
+			pending = sessionStorage.getItem(SCROLL_KEY);
+			sessionStorage.removeItem(SCROLL_KEY);
+		} catch {}
+		const id = pending ?? (location.hash ? decodeURIComponent(location.hash.slice(1)) : null);
+		if (id) {
+			// Espera a que el diseño esté listo para que el encabezado fijo no tape el título.
+			requestAnimationFrame(() => {
+				scrollToSection(id, !!pending);
+				cleanUrl();
+			});
+		}
+	}
 </script>
