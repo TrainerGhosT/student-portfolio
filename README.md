@@ -82,7 +82,7 @@ messages/<fecha>-<id>.json    # copia de cada mensaje del formulario
 ### 1. Dominio (recomendado: Cloudflare Registrar)
 
 1. Crea una cuenta en <https://dash.cloudflare.com> y entra a **Domain Registration → Register Domains**.
-2. Busca el nombre (p. ej. `dylanmontoya.dev`) y cómpralo. Cloudflare cobra el precio de costo y no sube la renovación.
+2. Busca el nombre (p. ej. `dmontoya.dev`) y cómpralo. Cloudflare cobra el precio de costo y no sube la renovación.
 3. Como el dominio ya queda en Cloudflare, no hay que configurar DNS ni nameservers.
 
 Alternativa gratis el primer año: con el **GitHub Student Developer Pack** (Name.com ofrece `.dev`, `.app`, etc.).
@@ -96,10 +96,10 @@ pnpm wrangler login
 pnpm wrangler r2 bucket create portfolio-content
 ```
 
-Con el dominio (p. ej. `dylanmontoya.dev`) agregado a Cloudflare, descomenta en `wrangler.jsonc`:
+Con el dominio (p. ej. `dmontoya.dev`) agregado a Cloudflare, descomenta en `wrangler.jsonc`:
 
 ```jsonc
-"routes": [{ "pattern": "dylanmontoya.dev", "custom_domain": true }],
+"routes": [{ "pattern": "dmontoya.dev", "custom_domain": true }],
 "workers_dev": false
 ```
 
@@ -115,7 +115,7 @@ elige este repo. Build command: `pnpm build` · Deploy command: `npx wrangler de
 ### 4. Panel privado con Cloudflare Access (gratis hasta 50 usuarios)
 
 1. Cloudflare → **Zero Trust** → *Access* → *Applications* → **Add an application** → *Self-hosted*.
-2. Destinos: `dylanmontoya.dev/admin` **y** `dylanmontoya.dev/api/admin`.
+2. Destinos: `dmontoya.dev/admin` **y** `dmontoya.dev/api/admin`.
 3. Política: *Allow* → *Include* → *Emails* → tu correo. Método de login: **One-time PIN** (te llega un código al correo) o Google/GitHub.
 4. Copia el **Application Audience (AUD) Tag** → `ACCESS_AUD` en `wrangler.jsonc`.
 5. Copia tu team domain (`https://<equipo>.cloudflareaccess.com`) → `ACCESS_TEAM_DOMAIN`.
@@ -140,14 +140,14 @@ pnpm wrangler secret put TURNSTILE_SECRET_KEY
 
 **Resend (envío):**
 
-1. En Resend → *Domains* → agrega `dylanmontoya.dev` (si el DNS está en Cloudflare, Resend crea los registros automáticamente).
+1. En Resend → *Domains* → agrega `dmontoya.dev` (si el DNS está en Cloudflare, Resend crea los registros automáticamente).
 2. *API Keys* → crea una con permiso *Sending access*:
 
    ```bash
    pnpm wrangler secret put RESEND_API_KEY
    ```
 
-3. `CONTACT_FROM` debe usar ese dominio (ej. `Portafolio <contacto@dylanmontoya.dev>`).
+3. `CONTACT_FROM` debe usar ese dominio (ej. `Portafolio <contacto@dmontoya.dev>`).
    Al responder el correo, la respuesta va directo al visitante (`reply_to`).
 
 **Correo personalizado que llega a tu Gmail** (Cloudflare Email Routing, gratis):
@@ -159,8 +159,8 @@ pnpm wrangler secret put TURNSTILE_SECRET_KEY
 
 Luego:
 
-- `CONTACT_TO`: `contacto@dylanmontoya.dev` (el reenvío te lo pasa a Gmail), `CONTACT_CC`: vacío.
-- Cambia el correo público en *Admin → Perfil* por `contacto@dylanmontoya.dev`.
+- `CONTACT_TO`: `contacto@dmontoya.dev` (el reenvío te lo pasa a Gmail), `CONTACT_CC`: vacío.
+- Cambia el correo público en *Admin → Perfil* por `contacto@dmontoya.dev`.
 - Opcional: en Gmail → *Enviar como* puedes responder desde `contacto@` usando el SMTP de Resend.
 
 **WhatsApp (el mensaje te llega al teléfono sin que el visitante salga del sitio):**
@@ -192,7 +192,7 @@ Además, **cada mensaje se guarda en R2** y se ve en *Admin → Mensajes*, aunqu
 
 ## Editar contenido
 
-Entra a `https://dylanmontoya.dev/admin`:
+Entra a `https://dmontoya.dev/admin`:
 
 - **Perfil:** nombre, titular, frase, fecha de nacimiento (eliges mostrar edad, fecha, ambas o nada; la edad se recalcula sola en cada visita), enfoque, correo, redes y texto «Sobre mí». Tu número de WhatsApp no está en el perfil: es un secreto del servidor.
 - **Experiencia / Educación / Proyectos:** crear, editar, eliminar. Fechas `AAAA` o `AAAA-MM`; sin fecha de fin = «Presente».

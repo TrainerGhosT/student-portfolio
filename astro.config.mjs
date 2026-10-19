@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://docs.astro.build/en/reference/configuration-reference/
 export default defineConfig({
-  site: 'https://dylanmontoya.dev',
+  site: 'https://dmontoya.dev',
   // Todo se renderiza en el Worker: el contenido vive en R2 y cambia sin redeploy.
   output: 'server',
   adapter: cloudflare({

@@ -16,6 +16,13 @@ function withHeaders(response: Response, headers: Record<string, string>): Respo
 export const onRequest = defineMiddleware(async (context, next) => {
 	const { pathname } = context.url;
 
+	// www.dmontoya.dev → dmontoya.dev
+	if (context.url.hostname.startsWith('www.')) {
+		const target = new URL(context.url);
+		target.hostname = target.hostname.slice(4);
+		return Response.redirect(target, 301);
+	}
+
 	if (isAdminPath(pathname)) {
 		const email = await getAdminEmail(context.request);
 		if (!email) {

@@ -10,7 +10,7 @@ focus:
   - Automatización de procesos
   - Arquitectura serverless
   - Desarrollo full-stack
-email: dylanmont15@gmail.com
+email: contacto@dmontoya.dev
 linkedin: https://www.linkedin.com/in/dylan-montoyam/
 github: https://github.com/TrainerGhosT
 ---

@@ -21,13 +21,17 @@
     "ADMIN_EMAIL": "dylanmont15@gmail.com",
     "ACCESS_TEAM_DOMAIN": "https://TU-EQUIPO.cloudflareaccess.com",
     "ACCESS_AUD": "",
-    "CONTACT_FROM": "Portafolio <contacto@dylanmontoya.dev>",
-    "CONTACT_TO": "dylanmont15@gmail.com",
+    "CONTACT_FROM": "Portafolio Dylan Montoya <notificaciones@dmontoya.dev>",
+    "CONTACT_TO": "contacto@dmontoya.dev",
     "CONTACT_CC": "",
     "TURNSTILE_SITE_KEY": "1x00000000000000000000AA"
-  }
+  },
 
-  // Dominio propio (descomentar cuando el dominio esté en Cloudflare):
-  // "routes": [{ "pattern": "dylanmontoya.dev", "custom_domain": true }],
-  // "workers_dev": false
+  // Dominio propio (la zona dmontoya.dev debe estar en la misma cuenta de Cloudflare).
+  "routes": [
+    { "pattern": "dmontoya.dev", "custom_domain": true },
+    { "pattern": "www.dmontoya.dev", "custom_domain": true }
+  ],
+  // Sin subdominio *.workers.dev: el sitio solo responde en dmontoya.dev.
+  "workers_dev": false
 }
