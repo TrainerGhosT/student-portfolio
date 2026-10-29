@@ -1,5 +1,5 @@
 ---
-role: Ingeniero de Sistemas y Automatizaciones
+role: Ingeniero en Sistemas y Automatizaciones
 company: Empresa de Tecnologías de la Información
 employmentType: Contrato · Técnico en Programación
 start: 2026-01
