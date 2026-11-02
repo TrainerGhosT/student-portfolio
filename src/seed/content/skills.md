@@ -3,39 +3,41 @@
 ---
 
 ## Cloud y DevOps
+- Cloudflare
 - Cloudflare Workers
-- Cloudflare Pages
-- Cloudflare R2
-- AWS S3
+- Azure
 - Git
 - GitHub
+- Docker
 - Linux
-- Windows Server
+- Windows
 
-## Frontend
+## Frontend Web & Mobile
 - React
 - Vue
 - Angular
 - TypeScript
-- JavaScript
 - Tailwind CSS
-- Vite
+- Bootstrap
 - HTML
 - CSS
+- Flutter (Mobile)
+- Kotlin (Mobile)
 
-## Backend y automatización
+## Backend y Automatización
 - Python
 - Node.js
 - NestJS
 - C# / .NET
-- Java
 - Power Apps
+- Power Automate
 
 ## Datos
 - SQL Server
-- MySQL
+- PostgreSQL
+- Mongo DB
+- Redis
 - Data Warehouse
-- Modelado relacional
 - Power BI
 
 ## Habilidades
